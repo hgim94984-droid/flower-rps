@@ -81,6 +81,12 @@ body::after{
    3. 헤더
    ========================================================================== */
 .site-head{ text-align:center; padding:12px 0 2px; position:relative }
+/* 오늘의 꽃 BI — 바탕화면 원본(final_오늘의꽃_bi.png)의 여백을 잘라 넣었다 */
+.bi{
+  display:block; height:auto; margin:0 auto 10px;
+  width:clamp(150px, 17vw, 250px);
+  filter:drop-shadow(0 7px 14px rgba(150,90,60,.20));
+}
 .title-row{ display:flex; align-items:center; justify-content:center; gap:10px }
 .title-row .sprig{ width:clamp(26px,3.2vw,36px); flex:none }
 .sprig-r{ transform:scaleX(-1) }
@@ -108,6 +114,7 @@ h1{
 @media (max-width:620px){
   .tools{ position:static; justify-content:center; margin-top:12px }
   .icon-btn{ width:42px; height:42px }
+  .bi{ width:clamp(136px, 36vw, 190px); margin-bottom:8px }
 }
 
 /* ==========================================================================
@@ -385,6 +392,7 @@ h1{
 <main class="page">
 
   <header class="site-head">
+    <img class="bi" src="logo.png" width="880" height="365" alt="오늘의 꽃" decoding="async">
     <div class="title-row">
       <svg class="sprig sprig-l" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigRose"/></svg>
       <h1>오늘의 꽃 가위바위보</h1>
