@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="color-scheme" content="light">
+<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F6EEDF">
 <title>오늘의 꽃 가위바위보 — MC 추첨</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E">
@@ -33,6 +33,23 @@
   --hand-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
   /* 슬롯 한 칸의 높이. 창 높이와 슬롯 높이가 같아야 translateY(-25%) 가 정확히 한 칸이다 */
   --slot: clamp(140px, min(21vw, 27vh), 242px);
+  --ico-line:   #453730;   /* 아이콘 윤곽선 */
+  --slot-ink:   #453730;   /* 슬롯 창 안 글자 — 창은 밤에도 밝은 종이다 */
+}
+/* ── 나이트 모드 — 밤에 방송할 때 눈이 부시지 않게. 기본은 라이트, 버튼으로 전환 ── */
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:      #221C28;
+  --card:       #30293A;
+  --ink:        #F2E7DE;
+  --ink-soft:   #B6A6B4;
+  --line:       #4E4259;
+  --line-soft:  #443A50;
+  --rose:       #E5788F;
+  --rose-deep:  #C4546F;
+  --rose-line:  #F0A0B4;
+  --sage:       #9DB58E;
+  --ico-line:   #2E2535;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none !important}
@@ -56,6 +73,14 @@ body::before{
     radial-gradient(330px 330px at 52% 42%, rgba(255,255,255,.58), transparent 72%);
 }
 /* 종이 그레인 — 송출 화면에서 모아레가 생기지 않도록 자매 게임보다 옅게 */
+:root[data-theme="dark"] body::before{
+  background:
+    radial-gradient(430px 380px at 10% 4%,  rgba(126,60,94,.46), transparent 68%),
+    radial-gradient(520px 430px at 92% 10%, rgba(74,66,136,.44), transparent 70%),
+    radial-gradient(560px 500px at 84% 92%, rgba(52,98,82,.40), transparent 70%),
+    radial-gradient(470px 430px at 6% 82%,  rgba(124,98,42,.30), transparent 70%),
+    radial-gradient(330px 330px at 52% 42%, rgba(255,255,255,.05), transparent 72%);
+}
 body::after{
   content:""; position:fixed; inset:0; z-index:998; pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='220'%20height='220'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='matrix'%20values='0%200%200%200%200.42%200%200%200%200%200.34%200%200%200%200%200.26%200%200%200%200.035%200'/%3E%3C/filter%3E%3Crect%20width='220'%20height='220'%20filter='url(%23n)'/%3E%3C/svg%3E");
@@ -98,6 +123,24 @@ h1{
   letter-spacing:.02em; color:var(--ink);
   background:linear-gradient(transparent 62%, rgba(244,175,193,.95) 62% 90%, transparent 90%);
   padding:0 .18em; white-space:nowrap;
+}
+:root[data-theme="dark"] h1{
+  background:linear-gradient(transparent 62%, rgba(196,84,111,.62) 62% 90%, transparent 90%);
+}
+:root[data-theme="dark"] .result .shout{
+  background:linear-gradient(transparent 64%, rgba(196,84,111,.62) 64% 92%, transparent 92%);
+}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{ background:rgba(196,84,111,.5) }
+:root[data-theme="dark"] .result .hint b,
+:root[data-theme="dark"] .chip.fresh{ color:var(--rose-line) }
+:root[data-theme="dark"] .corner{ opacity:.62 }
+:root[data-theme="dark"] .reel-window{ background:#F7EFE2 }
+:root[data-theme="dark"] .panel.lit .reel-window{ box-shadow:0 0 0 2px rgba(240,160,180,.55) }
+:root[data-theme="dark"] .panel::before{
+  background:radial-gradient(130% 100% at 50% 16%, rgba(229,120,143,.55), rgba(246,196,210,.20) 56%, rgba(255,253,247,0) 84%);
+}
+:root[data-theme="dark"] .reel-window::after{
+  background:linear-gradient(rgba(0,0,0,.30), rgba(0,0,0,0) 11%, rgba(0,0,0,0) 89%, rgba(0,0,0,.30));
 }
 .tagline{ margin-top:7px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
 
@@ -158,7 +201,7 @@ h1{
 }
 .lamps i{
   width:10px; height:13px; border-radius:60% 60% 50% 50%;
-  background:var(--line-soft); border:1.4px solid #CBB796;
+  background:var(--line-soft); border:1.4px solid var(--line);
   opacity:.75; transition:opacity .1s ease, background-color .1s ease, border-color .1s ease;
 }
 /* 슬롯 창 — 한 칸만 보이고 나머지는 잘린다 */
@@ -180,11 +223,11 @@ h1{
   gap:clamp(6px,.9vw,12px);
   padding:clamp(6px,1vw,12px) 0;
 }
-.slot .ico{ width:clamp(84px, 12.6vw, 150px); height:auto; display:block }
+.slot .ico{ width:clamp(84px, 12.6vw, 150px); height:auto; display:block; color:var(--ico-line) }
 .slot .nm{
   font-family:var(--font-disp); font-weight:700;
   font-size:clamp(1.35rem, 2.8vw, 2.2rem);
-  letter-spacing:.05em; color:var(--ink);
+  letter-spacing:.05em; color:var(--slot-ink);
 }
 /* 슬롯 창 위아래에 옅은 그늘을 줘 '통 안에서 돈다' 느낌을 만든다 */
 .reel-window::after{
@@ -364,62 +407,75 @@ h1{
       <circle cx="25" cy="18" r="4.2" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.3"/>
     </g>
 
-    <!-- 가위 = 잎가위 (잎사귀 날 + 손잡이 고리) -->
+    <!-- 가위 — 날이 X자로 교차하고 손잡이 고리가 눈이 되는 꽃가위 친구 -->
     <g id="icoScissors">
-      <path d="M50 58 C 44 44 36 28 27 16 C 17 28 21 46 36 61 Z"
-            fill="#F8D3DC" stroke="#453730" stroke-width="2.4" stroke-linejoin="round"/>
-      <path d="M50 58 C 56 44 64 28 73 16 C 83 28 79 46 64 61 Z"
-            fill="#F8D3DC" stroke="#453730" stroke-width="2.4" stroke-linejoin="round"/>
-      <path d="M31 22 C 36 32 42 44 47 55" fill="none" stroke="#DDA0AF" stroke-width="1.8" stroke-linecap="round"/>
-      <path d="M69 22 C 64 32 58 44 53 55" fill="none" stroke="#DDA0AF" stroke-width="1.8" stroke-linecap="round"/>
-      <path d="M46 62 L 33 78" fill="none" stroke="#453730" stroke-width="3.4" stroke-linecap="round"/>
-      <path d="M54 62 L 67 78" fill="none" stroke="#453730" stroke-width="3.4" stroke-linecap="round"/>
-      <circle cx="28" cy="85" r="9" fill="none" stroke="#453730" stroke-width="3.2"/>
-      <circle cx="72" cy="85" r="9" fill="none" stroke="#453730" stroke-width="3.2"/>
-      <circle cx="50" cy="59" r="4.6" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.6"/>
+      <path d="M54 58 C 47 44 37 27 21 13 C 10 28 18 48 38 63 Z"
+            fill="#F8D3DC" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>
+      <path d="M46 58 C 53 44 63 27 79 13 C 90 28 82 48 62 63 Z"
+            fill="#F8D3DC" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>
+      <path d="M27 23 C 33 34 41 46 49 54" fill="none" stroke="#E7A7B8" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M73 23 C 67 34 59 46 51 54" fill="none" stroke="#E7A7B8" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M40 52 L 67 73" fill="none" stroke="currentColor" stroke-width="5.4" stroke-linecap="round"/>
+      <path d="M60 52 L 33 73" fill="none" stroke="currentColor" stroke-width="5.4" stroke-linecap="round"/>
+      <ellipse cx="17" cy="88" rx="5.2" ry="3.4" fill="#F7A8BC" opacity=".85"/>
+      <ellipse cx="83" cy="88" rx="5.2" ry="3.4" fill="#F7A8BC" opacity=".85"/>
+      <circle cx="29" cy="79" r="11.5" fill="#FFFDF7" stroke="currentColor" stroke-width="3.4"/>
+      <circle cx="71" cy="79" r="11.5" fill="#FFFDF7" stroke="currentColor" stroke-width="3.4"/>
+      <circle cx="31" cy="80" r="4.8" fill="currentColor"/>
+      <circle cx="73" cy="80" r="4.8" fill="currentColor"/>
+      <circle cx="29.1" cy="77.7" r="1.7" fill="#FFFDF7"/>
+      <circle cx="71.1" cy="77.7" r="1.7" fill="#FFFDF7"/>
+      <path d="M45 87 q5 5 10 0" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
+      <circle cx="50" cy="57" r="4.6" fill="#F6E7A9" stroke="#D9B96E" stroke-width="2.2"/>
     </g>
 
-    <!-- 바위 = 이끼 낀 조약돌 (옆으로 퍼진 돌 + 밑동 이끼 + 돌 위에 작은 꽃 한 송이) -->
+    <!-- 바위 — 면이 꺾인 돌, 밑동에 이끼, 꼭대기에 꽃 한 송이 -->
     <g id="icoRock">
-      <!-- 옆에 놓인 작은 돌 -->
-      <path d="M6 84 L 9 74 L 18 70 L 25 77 L 23 84 Z"
-            fill="#CFC4DF" stroke="#453730" stroke-width="2.2" stroke-linejoin="round"/>
-      <!-- 본체 바위 — 면이 꺾인 실루엣이라야 '돌'로 읽힌다 -->
-      <path d="M22 84 L 27 60 L 42 46 L 60 43 L 80 53 L 90 70 L 86 84 Z"
-            fill="#E3D9F0" stroke="#453730" stroke-width="2.6" stroke-linejoin="round"/>
-      <!-- 왼쪽 그늘 면 -->
-      <path d="M22 84 L 27 60 L 42 46 L 50 68 Z"
-            fill="#D2C3EC" stroke="#453730" stroke-width="2.2" stroke-linejoin="round"/>
-      <!-- 오른쪽 면 경계 -->
-      <path d="M50 68 L 86 84" fill="none" stroke="#453730" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M60 43 L 50 68" fill="none" stroke="#B9A6D6" stroke-width="2" stroke-linecap="round"/>
-      <!-- 밑동 이끼 -->
-      <path d="M28 84 C 30 75 37 75 39 83 C 42 74 50 75 51 84 Z"
-            fill="#CBE2BA" stroke="#8FA381" stroke-width="1.8" stroke-linejoin="round"/>
-      <!-- 바위 위에 핀 작은 꽃 -->
-      <g fill="#F8D3DC" stroke="#DDA0AF" stroke-width="1.5">
-        <ellipse cx="68" cy="30" rx="4.4" ry="6.2"/>
-        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(72 68 37)"/>
-        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(144 68 37)"/>
-        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(216 68 37)"/>
-        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(288 68 37)"/>
+      <path d="M13 85 L 17 56 L 35 36 L 60 32 L 83 47 L 90 71 L 86 85 Z"
+            fill="#DCD6E4" stroke="currentColor" stroke-width="3.4" stroke-linejoin="round"/>
+      <path d="M13 85 L 17 56 L 35 36 L 41 53 L 27 85 Z"
+            fill="#C6BDD6" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M83 47 L 90 71 L 86 85 L 74 85 L 79 64 Z"
+            fill="#C6BDD6" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="34" cy="71" rx="5.6" ry="3.8" fill="#F7A8BC" opacity=".82"/>
+      <ellipse cx="66" cy="71" rx="5.6" ry="3.8" fill="#F7A8BC" opacity=".82"/>
+      <path d="M38 63 q6 -8.4 12 0" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round"/>
+      <path d="M54 63 q6 -8.4 12 0" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round"/>
+      <path d="M44.5 71 q5.5 6.5 11 0" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linecap="round"/>
+      <path d="M22 85 q4 -8 9.5 -4 q3 -7.5 9.5 -3 q4.5 -4 8.5 2.5 q-3.5 4.5 -14 4.5 Z"
+            fill="#CBE2BA" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/>
+      <path d="M69 85 q3 -6 8 -2.5 q4 -2 6 2.5 Z"
+            fill="#CBE2BA" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M61 33 L 61 25" fill="none" stroke="#8FA381" stroke-width="2.8" stroke-linecap="round"/>
+      <path d="M61 29 C 55 29 52 26 51 21 C 57 21 60 24 61 28 Z"
+            fill="#CBE2BA" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+      <g fill="#F8D3DC" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round">
+        <ellipse cx="61" cy="13" rx="5.2" ry="6.8"/>
+        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(72 61 20)"/>
+        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(144 61 20)"/>
+        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(216 61 20)"/>
+        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(288 61 20)"/>
       </g>
-      <circle cx="68" cy="37" r="3.6" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.4"/>
+      <circle cx="61" cy="20" r="4.2" fill="#F6E7A9" stroke="#D9B96E" stroke-width="2"/>
     </g>
 
-    <!-- 보 = 활짝 펼친 꽃잎 다섯 장 -->
+    <!-- 보 — 활짝 핀 꽃 친구 -->
     <g id="icoPaper">
-      <g fill="#CBE2BA" stroke="#453730" stroke-width="2.4" stroke-linejoin="round">
-        <ellipse cx="50" cy="26" rx="15" ry="22"/>
-        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(72 50 52)"/>
-        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(144 50 52)"/>
-        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(216 50 52)"/>
-        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(288 50 52)"/>
+      <g fill="#CBE2BA" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round">
+        <ellipse cx="50" cy="23" rx="17" ry="21"/>
+        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(72 50 52)"/>
+        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(144 50 52)"/>
+        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(216 50 52)"/>
+        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(288 50 52)"/>
       </g>
-      <circle cx="50" cy="52" r="12.5" fill="#F6E7A9" stroke="#D9B96E" stroke-width="2.2"/>
-      <circle cx="46" cy="49" r="2" fill="#D9B96E"/>
-      <circle cx="54" cy="51" r="2" fill="#D9B96E"/>
-      <circle cx="50" cy="56" r="2" fill="#D9B96E"/>
+      <circle cx="50" cy="52" r="19" fill="#F6E7A9" stroke="currentColor" stroke-width="3.2"/>
+      <ellipse cx="36.6" cy="56.6" rx="4.6" ry="3" fill="#F7A8BC" opacity=".9"/>
+      <ellipse cx="63.4" cy="56.6" rx="4.6" ry="3" fill="#F7A8BC" opacity=".9"/>
+      <ellipse cx="43" cy="49" rx="3.4" ry="4.4" fill="currentColor"/>
+      <ellipse cx="57" cy="49" rx="3.4" ry="4.4" fill="currentColor"/>
+      <circle cx="41.8" cy="47.2" r="1.3" fill="#FFFDF7"/>
+      <circle cx="55.8" cy="47.2" r="1.3" fill="#FFFDF7"/>
+      <path d="M44.5 58 q5.5 6 11 0" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
     </g>
   </defs>
 </svg>
@@ -442,6 +498,7 @@ h1{
     </div>
     <p class="tagline">시작을 누르면 칸 안에서 가위·바위·보가 빠르게 돌아가다 멈춥니다. 멈춘 것이 MC가 낸 패입니다.</p>
     <div class="tools">
+      <button class="icon-btn" id="themeBtn" type="button" aria-pressed="false" aria-label="나이트 모드 켜기">🌙</button>
       <button class="icon-btn" id="muteBtn" type="button" aria-pressed="false" aria-label="소리 끄기">🔊</button>
       <button class="icon-btn" id="fullBtn" type="button" aria-label="전체화면">⛶</button>
     </div>
@@ -495,7 +552,7 @@ h1{
 
   <p class="foot">
     <kbd>스페이스</kbd> 또는 <kbd>Enter</kbd> 시작 · 다음 판 &nbsp;·&nbsp;
-    <kbd>M</kbd> 소리 &nbsp;·&nbsp; <kbd>F</kbd> 전체화면 &nbsp;·&nbsp; <kbd>R</kbd> 기록 지우기
+    <kbd>M</kbd> 소리 &nbsp;·&nbsp; <kbd>N</kbd> 나이트 &nbsp;·&nbsp; <kbd>F</kbd> 전체화면 &nbsp;·&nbsp; <kbd>R</kbd> 기록 지우기
   </p>
 
 </main>
@@ -519,6 +576,7 @@ var TICK_HZ   = [659.26, 523.25, 783.99];      /* 가위 E5 / 바위 C5 / 보 G5
 var LS_MUTE = 'todayFlowerRSP.muted.v1';
 var LS_LEN  = 'todayFlowerRSP.len.v1';
 var LS_HIST = 'todayFlowerRSP.history.v1';
+var LS_THEME = 'todayFlowerRSP.theme.v1';
 var MAX_CHIPS = 8;
 
 /* 길이 모드별 스케줄 파라미터 — 총 시간은 스텝 수의 결과로만 나온다 */
@@ -540,6 +598,7 @@ var startBtn = document.getElementById('startBtn');
 var resultEl = document.getElementById('result');
 var historyEl= document.getElementById('history');
 var muteBtn  = document.getElementById('muteBtn');
+var themeBtn = document.getElementById('themeBtn');
 var fullBtn  = document.getElementById('fullBtn');
 var lenShort = document.getElementById('lenShort');
 var lenNormal= document.getElementById('lenNormal');
@@ -549,6 +608,7 @@ var petalLayer = document.getElementById('petalLayer');
 var state = 'idle';            /* 'idle' | 'spinning' | 'result' */
 var rafId = null;
 var muted = false;
+var night = false;
 var lenMode = 'normal';
 var rounds = [];
 var lastEndAt = 0;             /* 결과 확정 시각 — 연타 방지 */
@@ -563,6 +623,7 @@ function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
 
 function loadPrefs(){
   muted = lsGet(LS_MUTE) === '1';
+  night = lsGet(LS_THEME) === 'dark';
   var m = lsGet(LS_LEN);
   if (m === 'short' || m === 'normal') lenMode = m;
   try{
@@ -907,6 +968,21 @@ function clearHistory(){
 /* ==========================================================================
    11. 조작 — 버튼 / 키보드
    ========================================================================== */
+/* 나이트 모드 — 기본은 라이트. 고른 값은 저장돼 다음에 열어도 그대로다 */
+function applyTheme(){
+  if (night) document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+  themeBtn.textContent = night ? '☀️' : '🌙';
+  themeBtn.setAttribute('aria-pressed', night ? 'true' : 'false');
+  themeBtn.setAttribute('aria-label', night ? '라이트 모드 켜기' : '나이트 모드 켜기');
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', night ? '#221C28' : '#F6EEDF');
+}
+function toggleTheme(){
+  night = !night;
+  lsSet(LS_THEME, night ? 'dark' : 'light');
+  applyTheme();
+}
 function syncMuteBtn(){
   muteBtn.textContent = muted ? '🔇' : '🔊';
   muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
@@ -936,6 +1012,7 @@ function toggleFull(){
 
 startBtn.addEventListener('click', startSpin);
 muteBtn.addEventListener('click', toggleMute);
+themeBtn.addEventListener('click', toggleTheme);
 fullBtn.addEventListener('click', toggleFull);
 lenShort.addEventListener('click', function(){ setLen('short'); });
 lenNormal.addEventListener('click', function(){ setLen('normal'); });
@@ -958,6 +1035,8 @@ document.addEventListener('keydown', function(e){
     e.preventDefault(); toggleMute();
   } else if (k === 'f' || k === 'F' || k === 'ㄹ'){
     e.preventDefault(); toggleFull();
+  } else if (k === 'n' || k === 'N' || k === 'ㅜ'){
+    e.preventDefault(); toggleTheme();
   } else if (k === 'r' || k === 'R' || k === 'ㄱ'){
     if (state === 'spinning') return;
     e.preventDefault(); clearHistory();
@@ -1014,6 +1093,7 @@ window.__durations = function(){
 
 /* ---------- 13. 초기화 ---------- */
 loadPrefs();
+applyTheme();
 syncMuteBtn();
 syncLenBtns();
 renderHistory(false);
