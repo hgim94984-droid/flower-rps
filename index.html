@@ -581,13 +581,14 @@ var MAX_CHIPS = 8;
 
 /* 길이 모드별 스케줄 파라미터 — 총 시간은 스텝 수의 결과로만 나온다 */
 var MODES = {
-  short:  { cruise: 8,  decelN: 11, decelMax: 360 },   /* 약 3.1초 (밀당 시 3.7초) */
-  normal: { cruise: 14, decelN: 16, decelMax: 430 }    /* 약 4.7초 (밀당 시 5.3초) */
+  short:  { cruise: 12, decelN: 10, decelMax: 290 },   /* 약 2.3초 (밀당 시 2.8초) */
+  normal: { cruise: 20, decelN: 15, decelMax: 340 }    /* 약 3.5초 (밀당 시 4.0초) */
 };
-var ACCEL = [150, 126, 105, 88, 74, 65];               /* 가속 6스텝, 합 608ms */
-var CRUISE_MS   = 62;                                  /* 등속 간격 */
-var FAKE_PAUSE  = 560;                                 /* 멈춘 듯하다 한 칸 더 */
-var STRONG_TICK_AT = 200;                              /* 이 간격부터 묵직한 틱음 */
+var ACCEL = [100, 84, 70, 60, 50, 44];                 /* 가속 6스텝, 합 408ms */
+var CRUISE_MS   = 42;                                  /* 등속 간격 — 초당 24칸 */
+var FAKE_PAUSE  = 430;                                 /* 멈춘 듯하다 한 칸 더 */
+var STRONG_TICK_AT = 170;                              /* 이 간격부터 묵직한 틱음 */
+var FAST_TICK_AT   = 55;                               /* 이보다 빠르면 틱을 짧고 작게 */
 var RESTART_LOCK = 400;                                /* 결과 뒤 재시작 잠금 */
 
 /* ---------- 1. DOM ---------- */
@@ -710,22 +711,27 @@ function pluck(freq, t, vol, dur, bus){
 }
 /* 칸 통과 틱음 — 칸마다 음높이가 달라 눈을 떼도 귀로 구분된다
    strong=true 면 감속 구간의 낮고 묵직한 '탁' */
-function playTick(idx, strong){
+function playTick(idx, strong, interval){
   if (!actx || actx.state !== 'running') return;
   var base = TICK_HZ[idx] || 659.26;
+  /* 간격이 아주 짧은 구간에서는 꼬리를 줄이고 소리도 낮춘다.
+     안 그러면 소리가 겹쳐 쌓여 지직거린다 */
+  var fast = !strong && interval > 0 && interval < FAST_TICK_AT;
+  var glide = strong ? 0.09 : (fast ? 0.035 : 0.07);
+  var tail  = strong ? 0.13 : (fast ? 0.042 : 0.085);
+  var vol   = strong ? 0.18 : (fast ? 0.065 : 0.10);
   var t = actx.currentTime;
   var o = actx.createOscillator(); o.type = 'sine';
-  var hi = strong ? base * 1.15 : base * 2.0;
-  var lo = strong ? base * 0.56 : base * 1.05;
-  o.frequency.setValueAtTime(hi, t);
-  o.frequency.exponentialRampToValueAtTime(lo, t + (strong ? 0.09 : 0.07));
+  o.frequency.setValueAtTime(strong ? base * 1.15 : base * 2.0, t);
+  o.frequency.exponentialRampToValueAtTime(strong ? base * 0.56 : base * 1.05, t + glide);
   var g = actx.createGain();
   g.gain.setValueAtTime(0.0001, t);
   /* 현장 마이크 간섭을 줄이려고 볼륨은 낮게 둔다 */
-  g.gain.linearRampToValueAtTime(strong ? 0.18 : 0.10, t + 0.004);
-  g.gain.exponentialRampToValueAtTime(0.0004, t + (strong ? 0.13 : 0.085));
+  g.gain.linearRampToValueAtTime(vol, t + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0004, t + tail);
   o.connect(g); g.connect(tickBus);
-  o.start(t); o.stop(t + (strong ? 0.16 : 0.1));
+  o.start(t);
+  o.stop(t + tail + 0.02);
 }
 /* 확정 팡파레 — 상승 아르페지오 + 마무리 화음 */
 function playFanfare(){
@@ -863,7 +869,7 @@ function frame(now){
     /* 어떤 이유로든 어긋나면 바로 맞춘다 — 보이는 그림이 결과와 달라서는 안 된다 */
     if (reelPos % 3 !== spin.cur) showSymbol(spin.cur);
     syncPanelLabel(spin.cur);
-    playTick(spin.cur, lastIv >= STRONG_TICK_AT);
+    playTick(spin.cur, lastIv >= STRONG_TICK_AT, lastIv);
   }
 
   if (spin.step >= spin.intervals.length){ lockIn(); return; }
