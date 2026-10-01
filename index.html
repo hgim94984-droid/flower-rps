@@ -444,16 +444,16 @@ h1{
         <!-- 슬롯 네 장: 가위·바위·보 + 가위(복제). 복제 칸에서 티 안 나게 처음으로 되돌린다 -->
         <div class="reel" id="reel" aria-hidden="true">
           <div class="slot">
-            <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="async">
+            <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="sync">
           </div>
           <div class="slot">
-            <img class="pic" src="char-bawi.jpg" width="900" height="900" alt="바위" decoding="async">
+            <img class="pic" src="char-bawi.jpg" width="900" height="900" alt="바위" decoding="sync">
           </div>
           <div class="slot">
-            <img class="pic" src="char-bo.jpg" width="900" height="900" alt="보" decoding="async">
+            <img class="pic" src="char-bo.jpg" width="900" height="900" alt="보" decoding="sync">
           </div>
           <div class="slot">
-            <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="async">
+            <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="sync">
           </div>
         </div>
       </div>
@@ -1026,6 +1026,14 @@ window.__durations = function(){
 };
 
 /* ---------- 13. 초기화 ---------- */
+/* 캐릭터 그림을 미리 풀어 둔다 — 빠르게 넘어갈 때 빈 칸이 번쩍이지 않게 */
+(function(){
+  var pics = document.querySelectorAll('.slot .pic');
+  for (var i = 0; i < pics.length; i++){
+    if (pics[i].decode){ pics[i].decode().catch(function(){}); }
+  }
+})();
+
 loadPrefs();
 applyTheme();
 syncMuteBtn();
