@@ -132,11 +132,11 @@ gh repo create flower-rps --public --source=. --remote=origin --push
 
 | | 파일 | 내용 |
 |---|---|---|
-| 가위 | `char-gawi.jpg` · `char-gawi2.jpg` | 폭포 정원 / 노란 꽃 그네 |
-| 바위 | `char-bawi.jpg` · `char-bawi2.jpg` | 한옥 정원 / 태극 연과 국화 |
-| 보 | `char-bo.jpg` · `char-bo2.jpg` | 연꽃 위 / 한옥 연못과 고양이 |
+| 가위 | `char-gawi.jpg` · `char-gawi2.jpg` · `char-gawi3.jpg` | 폭포 정원 / 노란 꽃 그네 / 단풍과 잔칫상 |
+| 바위 | `char-bawi.jpg` · `char-bawi2.jpg` · `char-bawi3.jpg` | 한옥 정원 / 태극 연과 국화 / 한복 남녀 주먹 대결 |
+| 보 | `char-bo.jpg` · `char-bo2.jpg` · `char-bo3.jpg` | 연꽃 위 / 한옥 연못과 고양이 / 용과 왕녀 |
 
-패마다 그림이 **두 장**이고, 돌아갈 때 여섯 장이 차례로 지나갑니다.
+패마다 그림이 **세 장**이고, 돌아갈 때 아홉 장이 차례로 지나갑니다.
 같은 패가 나와도 어느 그림이 걸릴지는 그때그때 다릅니다(확률은 패마다 3분의 1 그대로).
 
 그림마다 오른쪽 위에 `가위` / `주먹` / `보` 배지가 들어 있어서,
