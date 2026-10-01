@@ -234,7 +234,8 @@ h1{
 /* 뽑힌 패 배지 — 결과가 확정되면 그림 왼쪽 아래에 크게 뜬다. 크기는 칸에 비례 */
 .pick{
   position:absolute; left:4%; bottom:4%; z-index:3;
-  width:37%; aspect-ratio:1; border-radius:50%;
+  /* 폭·높이를 같은 식으로 직접 준다 — aspect-ratio 를 모르는 구형 브라우저에서도 원이 유지된다 */
+  width:calc(var(--slot) * .37); height:calc(var(--slot) * .37); border-radius:50%;
   background:#FFFDF7;
   border:calc(var(--slot) * .02) solid #1F9D8B;
   box-shadow:0 calc(var(--slot) * .015) calc(var(--slot) * .05) rgba(40,30,25,.38);
@@ -393,7 +394,7 @@ h1{
 
 @media (prefers-reduced-motion: reduce){
   .board.idle .panel{ animation:none }
-  .panel, .panel::before, .panel.won{ transition-duration:.01s }
+  .panel, .panel::before, .panel.won, .panel.won .pick{ transition-duration:.01s }
   .result .show{ animation:none }
 }
 </style>
