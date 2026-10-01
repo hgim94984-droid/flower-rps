@@ -8,6 +8,10 @@
 <meta name="theme-color" content="#F6EEDF">
 <title>오늘의 꽃 가위바위보 — MC 추첨</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E">
+<!-- 캐릭터 그림 미리 받기 — 첫 화면에 빈 칸이 보이지 않게 -->
+<link rel="preload" as="image" href="char-gawi.jpg">
+<link rel="preload" as="image" href="char-bawi.jpg">
+<link rel="preload" as="image" href="char-bo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -32,9 +36,7 @@
   /* 손그림 느낌의 삐뚤한 카드 모서리 — 자매 게임과 같은 값 */
   --hand-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
   /* 슬롯 한 칸의 높이. 창 높이와 슬롯 높이가 같아야 translateY(-25%) 가 정확히 한 칸이다 */
-  --slot: clamp(140px, min(21vw, 27vh), 242px);
-  --ico-line:   #453730;   /* 아이콘 윤곽선 */
-  --slot-ink:   #453730;   /* 슬롯 창 안 글자 — 창은 밤에도 밝은 종이다 */
+  --slot: clamp(150px, min(24vw, 30vh), 290px);
 }
 /* ── 나이트 모드 — 밤에 방송할 때 눈이 부시지 않게. 기본은 라이트, 버튼으로 전환 ── */
 :root[data-theme="dark"]{
@@ -49,7 +51,6 @@
   --rose-deep:  #C4546F;
   --rose-line:  #F0A0B4;
   --sage:       #9DB58E;
-  --ico-line:   #2E2535;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none !important}
@@ -134,9 +135,6 @@ h1{
 :root[data-theme="dark"] .result .hint b,
 :root[data-theme="dark"] .chip.fresh{ color:var(--rose-line) }
 :root[data-theme="dark"] .corner{ opacity:.62 }
-/* 심볼이 그림이 된 뒤로는 밤에 창을 밝힐 필요가 없다 — 어두운 채로 두고
-   캐릭터 카드 테두리만 밝게 해서 사진처럼 떠 보이게 한다 */
-:root[data-theme="dark"] .slot .card{ border-color:rgba(242,231,222,.62) }
 :root[data-theme="dark"] .panel.lit .reel-window{ box-shadow:0 0 0 2px rgba(240,160,180,.55) }
 :root[data-theme="dark"] .panel::before{
   background:radial-gradient(130% 100% at 50% 16%, rgba(229,120,143,.55), rgba(246,196,210,.20) 56%, rgba(255,253,247,0) 84%);
@@ -176,7 +174,7 @@ h1{
 }
 .panel{
   position:relative;
-  width:calc(var(--slot) + 92px); max-width:94%;
+  width:fit-content; max-width:94%;
   background:var(--card);
   border:2.6px solid var(--line);
   border-radius:var(--hand-radius);
@@ -207,10 +205,11 @@ h1{
   opacity:.75; transition:opacity .1s ease, background-color .1s ease, border-color .1s ease;
 }
 /* 슬롯 창 — 한 칸만 보이고 나머지는 잘린다 */
+/* 칸은 정사각형 — 그림이 원본 비율 그대로 꽉 들어간다(잘림 없음) */
 .reel-window{
   position:relative; z-index:1;
   overflow:hidden;
-  height:var(--slot);
+  width:var(--slot); height:var(--slot);
   border-radius:18px;
 }
 .reel{
@@ -220,37 +219,15 @@ h1{
   will-change:transform;
 }
 .slot{
-  flex:none; height:var(--slot);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:clamp(5px,.8vw,10px);
-  padding:clamp(4px,.6vw,8px) 0;
+  flex:none;
+  width:var(--slot); height:var(--slot);
 }
-/* 캐릭터 카드 — 그림이 칸을 가득 채우고 이름은 아래 띠로 얹는다 */
-.slot .card{
-  position:relative;
-  height:calc(var(--slot) - 26px);
-  aspect-ratio:1;
-  border-radius:20px;
-  overflow:hidden;
-  border:2.6px solid var(--ico-line);
-  box-shadow:0 6px 14px rgba(99,74,56,.22);
-  background:var(--card);
-}
+/* 캐릭터 그림 — 칸을 꽉 채운다. 그림 안에 가위·바위·보 배지가 들어 있어 따로 글자를 쓰지 않는다 */
 .slot .pic{ width:100%; height:100%; object-fit:cover; display:block }
-.slot .nm{
-  position:absolute; left:0; right:0; bottom:0;
-  padding:3px 0 5px;
-  background:rgba(255,253,247,.90);
-  border-top:2px solid var(--ico-line);
-  font-family:var(--font-disp); font-weight:700;
-  font-size:clamp(1.1rem, 2.2vw, 1.8rem);
-  letter-spacing:.05em; color:#453730;
-  text-align:center;
-}
 /* 슬롯 창 위아래에 옅은 그늘을 줘 '통 안에서 돈다' 느낌을 만든다 */
 .reel-window::after{
   content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
-  background:linear-gradient(rgba(118,96,78,.10), rgba(118,96,78,0) 11%, rgba(118,96,78,0) 89%, rgba(118,96,78,.10));
+  background:linear-gradient(rgba(60,44,34,.14), rgba(60,44,34,0) 10%, rgba(60,44,34,0) 90%, rgba(60,44,34,.14));
 }
 /* 점등 상태 — 종이가 들리고 채도가 깨어난다 */
 .panel.lit{
@@ -381,6 +358,7 @@ h1{
   .history{ margin-top:8px; min-height:32px }
 }
 @media (max-height: 680px){
+  :root{ --slot: clamp(150px, min(24vw, 27.5vh), 290px) }
   .tagline{ display:none }
   .board{ margin-top:8px }
 }
@@ -460,28 +438,16 @@ h1{
         <!-- 슬롯 네 장: 가위·바위·보 + 가위(복제). 복제 칸에서 티 안 나게 처음으로 되돌린다 -->
         <div class="reel" id="reel" aria-hidden="true">
           <div class="slot">
-            <div class="card">
-              <img class="pic" src="char-gawi.jpg" width="440" height="440" alt="" decoding="async">
-              <span class="nm">가위</span>
-            </div>
+            <img class="pic" src="char-gawi.jpg" width="600" height="600" alt="가위" decoding="async">
           </div>
           <div class="slot">
-            <div class="card">
-              <img class="pic" src="char-bawi.jpg" width="440" height="440" alt="" decoding="async">
-              <span class="nm">바위</span>
-            </div>
+            <img class="pic" src="char-bawi.jpg" width="600" height="600" alt="바위" decoding="async">
           </div>
           <div class="slot">
-            <div class="card">
-              <img class="pic" src="char-bo.jpg" width="440" height="440" alt="" decoding="async">
-              <span class="nm">보</span>
-            </div>
+            <img class="pic" src="char-bo.jpg" width="600" height="600" alt="보" decoding="async">
           </div>
           <div class="slot">
-            <div class="card">
-              <img class="pic" src="char-gawi.jpg" width="440" height="440" alt="" decoding="async">
-              <span class="nm">가위</span>
-            </div>
+            <img class="pic" src="char-gawi.jpg" width="600" height="600" alt="가위" decoding="async">
           </div>
         </div>
       </div>
