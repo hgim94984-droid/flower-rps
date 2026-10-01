@@ -134,7 +134,9 @@ h1{
 :root[data-theme="dark"] .result .hint b,
 :root[data-theme="dark"] .chip.fresh{ color:var(--rose-line) }
 :root[data-theme="dark"] .corner{ opacity:.62 }
-:root[data-theme="dark"] .reel-window{ background:#F7EFE2 }
+/* 심볼이 그림이 된 뒤로는 밤에 창을 밝힐 필요가 없다 — 어두운 채로 두고
+   캐릭터 카드 테두리만 밝게 해서 사진처럼 떠 보이게 한다 */
+:root[data-theme="dark"] .slot .card{ border-color:rgba(242,231,222,.62) }
 :root[data-theme="dark"] .panel.lit .reel-window{ box-shadow:0 0 0 2px rgba(240,160,180,.55) }
 :root[data-theme="dark"] .panel::before{
   background:radial-gradient(130% 100% at 50% 16%, rgba(229,120,143,.55), rgba(246,196,210,.20) 56%, rgba(255,253,247,0) 84%);
@@ -174,7 +176,7 @@ h1{
 }
 .panel{
   position:relative;
-  width:clamp(222px, 34vw, 384px);
+  width:calc(var(--slot) + 92px); max-width:94%;
   background:var(--card);
   border:2.6px solid var(--line);
   border-radius:var(--hand-radius);
@@ -220,14 +222,30 @@ h1{
 .slot{
   flex:none; height:var(--slot);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:clamp(6px,.9vw,12px);
-  padding:clamp(6px,1vw,12px) 0;
+  gap:clamp(5px,.8vw,10px);
+  padding:clamp(4px,.6vw,8px) 0;
 }
-.slot .ico{ width:clamp(84px, 12.6vw, 150px); height:auto; display:block; color:var(--ico-line) }
+/* 캐릭터 카드 — 그림이 칸을 가득 채우고 이름은 아래 띠로 얹는다 */
+.slot .card{
+  position:relative;
+  height:calc(var(--slot) - 26px);
+  aspect-ratio:1;
+  border-radius:20px;
+  overflow:hidden;
+  border:2.6px solid var(--ico-line);
+  box-shadow:0 6px 14px rgba(99,74,56,.22);
+  background:var(--card);
+}
+.slot .pic{ width:100%; height:100%; object-fit:cover; display:block }
 .slot .nm{
+  position:absolute; left:0; right:0; bottom:0;
+  padding:3px 0 5px;
+  background:rgba(255,253,247,.90);
+  border-top:2px solid var(--ico-line);
   font-family:var(--font-disp); font-weight:700;
-  font-size:clamp(1.35rem, 2.8vw, 2.2rem);
-  letter-spacing:.05em; color:var(--slot-ink);
+  font-size:clamp(1.1rem, 2.2vw, 1.8rem);
+  letter-spacing:.05em; color:#453730;
+  text-align:center;
 }
 /* 슬롯 창 위아래에 옅은 그늘을 줘 '통 안에서 돈다' 느낌을 만든다 */
 .reel-window::after{
@@ -407,76 +425,6 @@ h1{
       <circle cx="25" cy="18" r="4.2" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.3"/>
     </g>
 
-    <!-- 가위 — 날이 X자로 교차하고 손잡이 고리가 눈이 되는 꽃가위 친구 -->
-    <g id="icoScissors">
-      <path d="M54 58 C 47 44 37 27 21 13 C 10 28 18 48 38 63 Z"
-            fill="#F8D3DC" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>
-      <path d="M46 58 C 53 44 63 27 79 13 C 90 28 82 48 62 63 Z"
-            fill="#F8D3DC" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>
-      <path d="M27 23 C 33 34 41 46 49 54" fill="none" stroke="#E7A7B8" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M73 23 C 67 34 59 46 51 54" fill="none" stroke="#E7A7B8" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M40 52 L 67 73" fill="none" stroke="currentColor" stroke-width="5.4" stroke-linecap="round"/>
-      <path d="M60 52 L 33 73" fill="none" stroke="currentColor" stroke-width="5.4" stroke-linecap="round"/>
-      <ellipse cx="17" cy="88" rx="5.2" ry="3.4" fill="#F7A8BC" opacity=".85"/>
-      <ellipse cx="83" cy="88" rx="5.2" ry="3.4" fill="#F7A8BC" opacity=".85"/>
-      <circle cx="29" cy="79" r="11.5" fill="#FFFDF7" stroke="currentColor" stroke-width="3.4"/>
-      <circle cx="71" cy="79" r="11.5" fill="#FFFDF7" stroke="currentColor" stroke-width="3.4"/>
-      <circle cx="31" cy="80" r="4.8" fill="currentColor"/>
-      <circle cx="73" cy="80" r="4.8" fill="currentColor"/>
-      <circle cx="29.1" cy="77.7" r="1.7" fill="#FFFDF7"/>
-      <circle cx="71.1" cy="77.7" r="1.7" fill="#FFFDF7"/>
-      <path d="M45 87 q5 5 10 0" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
-      <circle cx="50" cy="57" r="4.6" fill="#F6E7A9" stroke="#D9B96E" stroke-width="2.2"/>
-    </g>
-
-    <!-- 바위 — 면이 꺾인 돌, 밑동에 이끼, 꼭대기에 꽃 한 송이 -->
-    <g id="icoRock">
-      <path d="M13 85 L 17 56 L 35 36 L 60 32 L 83 47 L 90 71 L 86 85 Z"
-            fill="#DCD6E4" stroke="currentColor" stroke-width="3.4" stroke-linejoin="round"/>
-      <path d="M13 85 L 17 56 L 35 36 L 41 53 L 27 85 Z"
-            fill="#C6BDD6" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M83 47 L 90 71 L 86 85 L 74 85 L 79 64 Z"
-            fill="#C6BDD6" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
-      <ellipse cx="34" cy="71" rx="5.6" ry="3.8" fill="#F7A8BC" opacity=".82"/>
-      <ellipse cx="66" cy="71" rx="5.6" ry="3.8" fill="#F7A8BC" opacity=".82"/>
-      <path d="M38 63 q6 -8.4 12 0" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round"/>
-      <path d="M54 63 q6 -8.4 12 0" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round"/>
-      <path d="M44.5 71 q5.5 6.5 11 0" fill="none" stroke="currentColor" stroke-width="2.9" stroke-linecap="round"/>
-      <path d="M22 85 q4 -8 9.5 -4 q3 -7.5 9.5 -3 q4.5 -4 8.5 2.5 q-3.5 4.5 -14 4.5 Z"
-            fill="#CBE2BA" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/>
-      <path d="M69 85 q3 -6 8 -2.5 q4 -2 6 2.5 Z"
-            fill="#CBE2BA" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-      <path d="M61 33 L 61 25" fill="none" stroke="#8FA381" stroke-width="2.8" stroke-linecap="round"/>
-      <path d="M61 29 C 55 29 52 26 51 21 C 57 21 60 24 61 28 Z"
-            fill="#CBE2BA" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
-      <g fill="#F8D3DC" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round">
-        <ellipse cx="61" cy="13" rx="5.2" ry="6.8"/>
-        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(72 61 20)"/>
-        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(144 61 20)"/>
-        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(216 61 20)"/>
-        <ellipse cx="61" cy="13" rx="5.2" ry="6.8" transform="rotate(288 61 20)"/>
-      </g>
-      <circle cx="61" cy="20" r="4.2" fill="#F6E7A9" stroke="#D9B96E" stroke-width="2"/>
-    </g>
-
-    <!-- 보 — 활짝 핀 꽃 친구 -->
-    <g id="icoPaper">
-      <g fill="#CBE2BA" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round">
-        <ellipse cx="50" cy="23" rx="17" ry="21"/>
-        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(72 50 52)"/>
-        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(144 50 52)"/>
-        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(216 50 52)"/>
-        <ellipse cx="50" cy="23" rx="17" ry="21" transform="rotate(288 50 52)"/>
-      </g>
-      <circle cx="50" cy="52" r="19" fill="#F6E7A9" stroke="currentColor" stroke-width="3.2"/>
-      <ellipse cx="36.6" cy="56.6" rx="4.6" ry="3" fill="#F7A8BC" opacity=".9"/>
-      <ellipse cx="63.4" cy="56.6" rx="4.6" ry="3" fill="#F7A8BC" opacity=".9"/>
-      <ellipse cx="43" cy="49" rx="3.4" ry="4.4" fill="currentColor"/>
-      <ellipse cx="57" cy="49" rx="3.4" ry="4.4" fill="currentColor"/>
-      <circle cx="41.8" cy="47.2" r="1.3" fill="#FFFDF7"/>
-      <circle cx="55.8" cy="47.2" r="1.3" fill="#FFFDF7"/>
-      <path d="M44.5 58 q5.5 6 11 0" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
-    </g>
   </defs>
 </svg>
 
@@ -512,20 +460,28 @@ h1{
         <!-- 슬롯 네 장: 가위·바위·보 + 가위(복제). 복제 칸에서 티 안 나게 처음으로 되돌린다 -->
         <div class="reel" id="reel" aria-hidden="true">
           <div class="slot">
-            <svg class="ico" viewBox="0 0 100 100"><use href="#icoScissors"/></svg>
-            <span class="nm">가위</span>
+            <div class="card">
+              <img class="pic" src="char-gawi.jpg" width="440" height="440" alt="" decoding="async">
+              <span class="nm">가위</span>
+            </div>
           </div>
           <div class="slot">
-            <svg class="ico" viewBox="0 0 100 100"><use href="#icoRock"/></svg>
-            <span class="nm">바위</span>
+            <div class="card">
+              <img class="pic" src="char-bawi.jpg" width="440" height="440" alt="" decoding="async">
+              <span class="nm">바위</span>
+            </div>
           </div>
           <div class="slot">
-            <svg class="ico" viewBox="0 0 100 100"><use href="#icoPaper"/></svg>
-            <span class="nm">보</span>
+            <div class="card">
+              <img class="pic" src="char-bo.jpg" width="440" height="440" alt="" decoding="async">
+              <span class="nm">보</span>
+            </div>
           </div>
           <div class="slot">
-            <svg class="ico" viewBox="0 0 100 100"><use href="#icoScissors"/></svg>
-            <span class="nm">가위</span>
+            <div class="card">
+              <img class="pic" src="char-gawi.jpg" width="440" height="440" alt="" decoding="async">
+              <span class="nm">가위</span>
+            </div>
           </div>
         </div>
       </div>
