@@ -18,6 +18,9 @@
 <link rel="preload" as="image" href="char-gawi3.jpg">
 <link rel="preload" as="image" href="char-bawi3.jpg">
 <link rel="preload" as="image" href="char-bo3.jpg">
+<link rel="preload" as="image" href="char-gawi4.jpg">
+<link rel="preload" as="image" href="char-bawi4.jpg">
+<link rel="preload" as="image" href="char-bo4.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -41,7 +44,7 @@
   --font-body:  "Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   /* 손그림 느낌의 삐뚤한 카드 모서리 — 자매 게임과 같은 값 */
   --hand-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
-  /* 슬롯 한 칸의 높이. 창 높이와 슬롯 높이가 같아야 translateY 한 칸(릴 높이의 1/10)이 정확히 맞는다 */
+  /* 슬롯 한 칸의 높이. 창 높이와 슬롯 높이가 같아야 translateY 한 칸(릴 높이의 1/13)이 정확히 맞는다 */
   /* 화면 높이에서 그림 말고 나머지가 차지하는 높이(--over)를 뺀 전부를 그림에 준다 */
   --over: 524px;
   --slot: clamp(150px, min(80vw, calc(100vh - var(--over))), 600px);
@@ -174,7 +177,7 @@ h1{
    4. 칸 하나 — 그 안에서 가위·바위·보가 슬롯처럼 위로 넘어간다
       · 칸 높이의 정확히 한 칸만큼 올리려고 translateY 를 % 로 쓴다.
         퍼센트는 요소 '자신의 높이' 기준이라 창 크기가 바뀌어도 어긋나지 않는다.
-      · 슬롯은 열 장(가위·바위·보 세 벌 + 맨 앞 가위 복제). 마지막 복제 칸에서 티 안 나게 처음으로 되돌린다.
+      · 슬롯은 열세 장(가위·바위·보 네 벌 + 맨 앞 가위 복제). 마지막 복제 칸에서 티 안 나게 처음으로 되돌린다.
    ========================================================================== */
 .board{
   margin-top:clamp(13px, 1.9vw, 22px);
@@ -222,7 +225,7 @@ h1{
 }
 .reel{
   display:flex; flex-direction:column;
-  height:1000%;                    /* 슬롯 열 장 */
+  height:1300%;                    /* 슬롯 열세 장 */
   transform:translateY(0);
   will-change:transform;
 }
@@ -492,7 +495,7 @@ h1{
     <div class="panel" id="panel" data-i="0" role="img" aria-label="가위">
       <span class="lamps" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       <div class="reel-window">
-        <!-- 슬롯 열 장: 가위·바위·보가 세 벌(그림이 다름) + 맨 앞 가위의 복제.
+        <!-- 슬롯 열세 장: 가위·바위·보가 네 벌(그림이 다름) + 맨 앞 가위의 복제.
              칸 번호를 3으로 나눈 나머지가 패(0 가위·1 바위·2 보)다. 복제 칸에서 티 안 나게 처음으로 되돌린다 -->
         <div class="reel" id="reel" aria-hidden="true">
           <div class="slot">
@@ -523,11 +526,18 @@ h1{
             <img class="pic" src="char-bo3.jpg" width="900" height="900" alt="보" decoding="sync">
           </div>
           <div class="slot">
+            <img class="pic" src="char-gawi4.jpg" width="900" height="900" alt="가위" decoding="sync">
+          </div>
+          <div class="slot">
+            <img class="pic" src="char-bawi4.jpg" width="900" height="900" alt="바위" decoding="sync">
+          </div>
+          <div class="slot">
+            <img class="pic" src="char-bo4.jpg" width="900" height="900" alt="보" decoding="sync">
+          </div>
+          <div class="slot">
             <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="sync">
           </div>
         </div>
-        <!-- 처음 대기화면 가림막 — 그림은 비칠 듯 연하게만 보이고 물음표가 뜬다 -->
-        <div class="veil" aria-hidden="true"><span>?</span></div>
       </div>
       <!-- 뽑힌 패 배지 — 화면을 작게 보는 사람도 무엇이 나왔는지 알 수 있게.
            캐릭터를 덜 가리도록 칸 왼쪽 테두리에 걸쳐 둔다(그래서 슬롯 창 밖에 있다) -->
@@ -780,14 +790,14 @@ function buildSchedule(startIdx, winner, mode){
 
 /* ==========================================================================
    7. 슬롯 렌더
-      슬롯은 열 장(가위·바위·보 세 벌 + 맨 앞 가위 복제)이고 창 높이는 한 칸이다.
-      translateY(-10%) 가 정확히 한 칸 — 퍼센트는 요소 자신의 높이 기준이라
+      슬롯은 열세 장(가위·바위·보 네 벌 + 맨 앞 가위 복제)이고 창 높이는 한 칸이다.
+      translateY(-100/13 %) 가 정확히 한 칸 — 퍼센트는 요소 자신의 높이 기준이라
       창 크기가 바뀌어도 어긋나지 않는다. 측정도, resize 처리도 필요 없다.
-      reelPos 0~9 중 9 는 0 과 같은 그림이므로, 9 에서 다음 칸으로 갈 때
+      reelPos 0~12 중 12 는 0 과 같은 그림이므로, 12 에서 다음 칸으로 갈 때
       트랜지션을 끄고 0 으로 되돌린 뒤 1 로 미끄러뜨린다 — 눈에는 계속 도는 걸로 보인다.
    ========================================================================== */
-var REEL_LAST = 9;               /* 마지막 칸(=0번 가위의 복제) */
-var reelPos = 0;                 /* 0..9, 패는 reelPos % 3 */
+var REEL_LAST = 12;              /* 마지막 칸(=0번 가위의 복제) */
+var reelPos = 0;                 /* 0..12, 패는 reelPos % 3 */
 
 function setReel(pos, ms){
   reelEl.style.transition = ms > 0 ? ('transform ' + ms + 'ms cubic-bezier(.25,.86,.3,1)') : 'none';
