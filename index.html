@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F6EEDF">
+<title>오늘의 꽃 가위바위보 — MC 추첨</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%8C%B8%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   1. 팔레트 & 베이스 — 수채화 정원 (자매 게임과 동일, 라이트 고정)
+   ========================================================================== */
+:root{
+  color-scheme: light;
+  --paper:      #F6EEDF;
+  --card:       #FFFDF7;
+  --ink:        #453730;
+  --ink-soft:   #7A6653;
+  --line:       #D9C6A8;
+  --line-soft:  #E7DAC3;
+  --rose:       #E5788F;
+  --rose-deep:  #CC5C77;
+  --rose-line:  #B84C67;
+  --sage:       #8FA381;
+  --font-disp:  "Gowun Batang","Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",serif;
+  --font-body:  "Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  /* 손그림 느낌의 삐뚤한 카드 모서리 — 자매 게임과 같은 값 */
+  --hand-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none !important}
+html{ -webkit-text-size-adjust:100% }
+body{
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:var(--paper);
+  min-height:100dvh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* 수채 번짐 얼룩 (고정 배경) */
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(430px 380px at 10% 4%,  rgba(244,186,201,.58), transparent 68%),
+    radial-gradient(520px 430px at 92% 10%, rgba(214,200,238,.54), transparent 70%),
+    radial-gradient(560px 500px at 84% 92%, rgba(203,226,186,.58), transparent 70%),
+    radial-gradient(470px 430px at 6% 82%,  rgba(243,222,141,.44), transparent 70%),
+    radial-gradient(330px 330px at 52% 42%, rgba(255,255,255,.58), transparent 72%);
+}
+/* 종이 그레인 — 송출 화면에서 모아레가 생기지 않도록 자매 게임보다 옅게 */
+body::after{
+  content:""; position:fixed; inset:0; z-index:998; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='220'%20height='220'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='matrix'%20values='0%200%200%200%200.42%200%200%200%200%200.34%200%200%200%200%200.26%200%200%200%200.035%200'/%3E%3C/filter%3E%3Crect%20width='220'%20height='220'%20filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   2. 레이아웃 — 종이 칼럼. 큰 화면에서는 clamp 로 자연히 커진다(배율 토글 없음)
+   ========================================================================== */
+.page{
+  position:relative; z-index:1;
+  width:100%; max-width:min(1040px, 94vw); margin:0 auto;
+  padding:14px 18px calc(26px + env(safe-area-inset-bottom));
+}
+.corner{position:fixed; width:76px; z-index:0; pointer-events:none; opacity:.9}
+.corner-tl{top:4px;  left:8px;   transform:rotate(-16deg)}
+.corner-tr{top:4px;  right:8px;  transform:scaleX(-1) rotate(-12deg)}
+.corner-bl{bottom:-8px; left:12px;  transform:rotate(12deg)}
+.corner-br{bottom:-8px; right:12px; transform:scaleX(-1) rotate(14deg)}
+@media (max-width:620px){
+  .corner{width:48px; opacity:.72}
+  .corner-bl,.corner-br{display:none}
+}
+
+/* ==========================================================================
+   3. 헤더
+   ========================================================================== */
+.site-head{ text-align:center; padding:12px 0 2px; position:relative }
+.title-row{ display:flex; align-items:center; justify-content:center; gap:10px }
+.title-row .sprig{ width:clamp(26px,3.2vw,36px); flex:none }
+.sprig-r{ transform:scaleX(-1) }
+h1{
+  font-family:var(--font-disp); font-weight:700;
+  font-size:clamp(1.8rem, 4.6vw, 2.9rem); line-height:1.16;
+  letter-spacing:.02em; color:var(--ink);
+  background:linear-gradient(transparent 62%, rgba(244,175,193,.95) 62% 90%, transparent 90%);
+  padding:0 .18em; white-space:nowrap;
+}
+.tagline{ margin-top:9px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
+
+/* 우상단 작은 도구 버튼들 */
+.tools{ position:absolute; top:10px; right:0; display:flex; gap:8px }
+.icon-btn{
+  width:46px; height:46px; border-radius:50%;
+  background:var(--card); border:1.6px solid var(--line);
+  color:var(--ink-soft); font-size:1.08rem; line-height:1;
+  display:grid; place-items:center; cursor:pointer;
+  font-family:inherit;
+  transition:transform .12s ease, border-color .12s ease, color .12s ease;
+}
+.icon-btn:hover{ border-color:var(--rose-line); color:var(--rose-deep); transform:translateY(-1px) }
+.icon-btn:active{ transform:translateY(1px) }
+@media (max-width:620px){
+  .tools{ position:static; justify-content:center; margin-top:12px }
+  .icon-btn{ width:42px; height:42px }
+}
+
+/* ==========================================================================
+   4. 가위바위보 패널 3칸 — "불이 들어온다"를 꽃이 피는 것으로 번역
+      · 점등은 opacity / transform / filter 만 바꾼다 (box-shadow 트랜지션 금지)
+   ========================================================================== */
+.board{
+  display:grid; grid-template-columns:repeat(3, 1fr);
+  gap:clamp(8px, 1.6vw, 20px);
+  margin-top:clamp(16px, 2.4vw, 28px);
+}
+.panel{
+  position:relative;
+  background:var(--card);
+  border:2.2px solid var(--line);
+  border-radius:var(--hand-radius);
+  padding:clamp(12px,1.8vw,22px) clamp(6px,1vw,14px) clamp(10px,1.4vw,18px);
+  display:flex; flex-direction:column; align-items:center; gap:clamp(6px,.9vw,12px);
+  box-shadow:0 10px 24px rgba(99,74,56,.10);
+  /* 대기 상태: 채도를 내려 가라앉혀 둔다 */
+  filter:saturate(.70);
+  opacity:.80;
+  transition:opacity .16s ease, filter .16s ease, transform .16s ease, border-color .16s ease;
+  will-change:transform, opacity, filter;
+}
+/* 1겹 — 카드 안쪽에서 물감이 번지는 워시 */
+.panel::before{
+  content:""; position:absolute; inset:0; border-radius:inherit;
+  background:radial-gradient(130% 100% at 50% 16%, rgba(246,196,210,.88), rgba(250,236,214,.50) 54%, rgba(255,253,247,0) 82%);
+  opacity:0; transform:scale(.82);
+  transition:opacity .09s ease, transform .18s ease;
+  pointer-events:none;
+}
+/* 2겹 — 카드 꼭지의 작은 꽃잎 네 장이 켜진다 */
+.lamps{
+  position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+  display:flex; gap:7px; pointer-events:none;
+}
+.lamps i{
+  width:9px; height:12px; border-radius:60% 60% 50% 50%;
+  background:var(--line-soft); border:1.3px solid #CBB796;
+  opacity:.75; transition:opacity .1s ease, background-color .1s ease, border-color .1s ease;
+}
+.panel .ico{ width:clamp(62px, 9.4vw, 148px); height:auto; display:block; position:relative; z-index:1 }
+.panel .nm{
+  position:relative; z-index:1;
+  font-family:var(--font-disp); font-weight:700;
+  font-size:clamp(1.15rem, 2.5vw, 2.1rem);
+  letter-spacing:.04em; color:var(--ink);
+}
+/* 점등 상태 — 3겹: 종이가 들리고 채도가 깨어난다 */
+.panel.lit{
+  opacity:1; filter:saturate(1.25);
+  transform:translateY(-5px);
+  border-color:var(--rose-line);
+  box-shadow:0 16px 30px rgba(184,76,103,.20);
+}
+.panel.lit::before{ opacity:1; transform:scale(1) }
+.panel.lit .lamps i{ opacity:1; background:#F7C9D5; border-color:var(--rose-line) }
+/* 확정 — 조금 더 크게 안착, 나머지는 뒤로 물러난다 */
+.panel.won{
+  transform:translateY(-6px) scale(1.055);
+  transition:transform .42s cubic-bezier(.2,1.6,.4,1), opacity .3s ease, filter .3s ease;
+}
+.panel.dim{ opacity:.34; filter:saturate(.35) }
+/* 대기 중 숨쉬기 — 돌릴 준비가 됐다는 신호 */
+@keyframes breathe{ 0%,100%{opacity:.78} 50%{opacity:.92} }
+.board.idle .panel{ animation:breathe 2.4s ease-in-out infinite }
+.board.idle .panel:nth-child(2){ animation-delay:-.8s }
+.board.idle .panel:nth-child(3){ animation-delay:-1.6s }
+
+/* ==========================================================================
+   5. 시작 버튼 + 길이 선택
+   ========================================================================== */
+.controls{ margin-top:clamp(18px,2.6vw,30px); display:flex; flex-direction:column; align-items:center; gap:14px }
+.btn-start{
+  width:min(420px, 92%);
+  padding:clamp(15px,1.7vw,22px) 28px;
+  border:none; border-radius:999px;
+  background:linear-gradient(180deg, var(--rose) 0%, var(--rose-deep) 100%);
+  color:#fff; font-family:var(--font-disp); font-weight:700;
+  font-size:clamp(1.18rem, 2.1vw, 1.75rem); letter-spacing:.06em;
+  cursor:pointer;
+  box-shadow:0 12px 26px rgba(204,92,119,.32);
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.btn-start:hover:not(:disabled){ transform:translateY(-2px); box-shadow:0 16px 32px rgba(204,92,119,.38) }
+.btn-start:active:not(:disabled){ transform:translateY(1px) scale(.99) }
+.btn-start:disabled{ filter:grayscale(.3) opacity(.62); cursor:default; box-shadow:none }
+.btn-start:focus-visible, .icon-btn:focus-visible, .seg button:focus-visible{
+  outline:3px solid rgba(204,92,119,.45); outline-offset:3px;
+}
+.seg{ display:inline-flex; background:var(--card); border:1.6px solid var(--line); border-radius:999px; padding:4px; gap:4px }
+.seg button{
+  border:none; background:transparent; cursor:pointer;
+  font-family:inherit; font-size:.92rem; color:var(--ink-soft);
+  padding:8px 18px; border-radius:999px;
+  transition:background-color .14s ease, color .14s ease;
+}
+.seg button[aria-pressed="true"]{ background:rgba(244,175,193,.55); color:var(--ink); font-weight:700 }
+.seg .lbl{ align-self:center; padding:0 10px 0 12px; font-size:.88rem; color:var(--ink-soft) }
+
+/* ==========================================================================
+   6. 결과 — 종이 띠 (방송 자막이 아니라 종이 칼럼 안의 결과 띠)
+   ========================================================================== */
+.result{
+  margin-top:clamp(16px,2.2vw,26px);
+  min-height:clamp(104px,10vw,150px);
+  display:grid; place-items:center;
+  background:var(--card);
+  border:2.2px solid var(--line);
+  border-radius:var(--hand-radius);
+  padding:clamp(14px,1.8vw,24px) 18px;
+  text-align:center;
+  box-shadow:0 10px 24px rgba(99,74,56,.08);
+  overflow:hidden;
+}
+.result .wait{ color:var(--ink-soft); font-size:clamp(.95rem,1.5vw,1.15rem) }
+.result .shout{
+  font-family:var(--font-disp); font-weight:700; color:var(--ink);
+  font-size:clamp(2rem, 5.2vw, 4rem); line-height:1.1; letter-spacing:.02em;
+  background:linear-gradient(transparent 64%, rgba(244,175,193,.9) 64% 92%, transparent 92%);
+  padding:0 .16em;
+}
+.result .hint{ margin-top:12px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
+.result .hint b{ color:var(--rose-deep); font-weight:700 }
+.result .spinning{ font-family:var(--font-disp); font-size:clamp(1.3rem,2.6vw,2rem); color:var(--ink-soft); letter-spacing:.14em }
+@keyframes riseIn{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
+.result .show{ animation:riseIn .34s ease-out both }
+
+/* ==========================================================================
+   7. 지난 판 기록 칩
+   ========================================================================== */
+.history{
+  margin-top:16px; display:flex; flex-wrap:wrap; gap:8px;
+  align-items:center; justify-content:center;
+  min-height:38px;
+}
+.history .cap{ font-size:.86rem; color:var(--ink-soft); margin-right:2px }
+.chip{
+  font-family:var(--font-disp); font-weight:700; font-size:.98rem;
+  padding:6px 14px; border-radius:999px;
+  background:var(--card); border:1.5px solid var(--line); color:var(--ink-soft);
+}
+.chip.fresh{ animation:popIn .18s ease-out both; border-color:var(--rose-line); color:var(--rose-deep) }
+@keyframes popIn{ from{opacity:0; transform:scale(.7)} to{opacity:1; transform:scale(1)} }
+
+/* ==========================================================================
+   8. 꽃잎 흩날림 — 확정 연출. animationend 에서 반드시 제거한다
+   ========================================================================== */
+.petal-layer{ position:fixed; inset:0; z-index:5; pointer-events:none; overflow:hidden }
+.petal{ position:absolute; width:16px; height:20px; border-radius:60% 60% 54% 54%;
+  will-change:transform, opacity; }
+@keyframes petalFall{
+  0%{ opacity:0; transform:translate3d(0,0,0) rotate(0deg) }
+  12%{ opacity:1 }
+  100%{ opacity:0; transform:translate3d(var(--dx), var(--dy), 0) rotate(var(--rot)) }
+}
+
+/* 도움말 */
+.foot{ margin-top:22px; text-align:center; font-size:.84rem; color:var(--ink-soft); line-height:1.8 }
+.foot kbd{
+  font-family:var(--font-body); font-size:.8rem;
+  background:var(--card); border:1.3px solid var(--line); border-bottom-width:2.4px;
+  border-radius:7px; padding:2px 7px; color:var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .board.idle .panel{ animation:none }
+  .panel, .panel::before, .panel.won{ transition-duration:.01s }
+  .result .show{ animation:none }
+}
+</style>
+</head>
+<body>
+
+<!-- ── SVG 스프라이트 ──────────────────────────────────────────────────── -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- 코너 꽃가지 (자매 게임과 동일) -->
+    <g id="sprigRose">
+      <path d="M37 88 C 35 66 31 48 26 30" fill="none" stroke="#8FA381" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M33 66 C 23 64 16 57 14 47 C 24 48 31 55 33 64 Z" fill="#DCE9D0" stroke="#8FA381" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M32 50 C 41 48 48 41 49 31 C 39 34 33 41 32 48 Z" fill="#DCE9D0" stroke="#8FA381" stroke-width="1.5" stroke-linejoin="round"/>
+      <g fill="#F8D3DC" stroke="#DDA0AF" stroke-width="1.4">
+        <ellipse cx="25" cy="9" rx="5" ry="7"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(72 25 18)"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(144 25 18)"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(216 25 18)"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(288 25 18)"/>
+      </g>
+      <circle cx="25" cy="18" r="4.2" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.3"/>
+    </g>
+    <g id="sprigLavender">
+      <path d="M37 88 C 35 66 31 48 26 30" fill="none" stroke="#8FA381" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M33 66 C 23 64 16 57 14 47 C 24 48 31 55 33 64 Z" fill="#DCE9D0" stroke="#8FA381" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M32 50 C 41 48 48 41 49 31 C 39 34 33 41 32 48 Z" fill="#DCE9D0" stroke="#8FA381" stroke-width="1.5" stroke-linejoin="round"/>
+      <g fill="#E3D9F0" stroke="#B9A6D6" stroke-width="1.4">
+        <ellipse cx="25" cy="9" rx="5" ry="7"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(72 25 18)"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(144 25 18)"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(216 25 18)"/>
+        <ellipse cx="25" cy="9" rx="5" ry="7" transform="rotate(288 25 18)"/>
+      </g>
+      <circle cx="25" cy="18" r="4.2" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.3"/>
+    </g>
+
+    <!-- 가위 = 잎가위 (잎사귀 날 + 손잡이 고리) -->
+    <g id="icoScissors">
+      <path d="M50 58 C 44 44 36 28 27 16 C 17 28 21 46 36 61 Z"
+            fill="#F8D3DC" stroke="#453730" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M50 58 C 56 44 64 28 73 16 C 83 28 79 46 64 61 Z"
+            fill="#F8D3DC" stroke="#453730" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M31 22 C 36 32 42 44 47 55" fill="none" stroke="#DDA0AF" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M69 22 C 64 32 58 44 53 55" fill="none" stroke="#DDA0AF" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M46 62 L 33 78" fill="none" stroke="#453730" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M54 62 L 67 78" fill="none" stroke="#453730" stroke-width="3.4" stroke-linecap="round"/>
+      <circle cx="28" cy="85" r="9" fill="none" stroke="#453730" stroke-width="3.2"/>
+      <circle cx="72" cy="85" r="9" fill="none" stroke="#453730" stroke-width="3.2"/>
+      <circle cx="50" cy="59" r="4.6" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.6"/>
+    </g>
+
+    <!-- 바위 = 이끼 낀 조약돌 (옆으로 퍼진 돌 + 밑동 이끼 + 돌 위에 작은 꽃 한 송이) -->
+    <g id="icoRock">
+      <!-- 옆에 놓인 작은 돌 -->
+      <path d="M6 84 L 9 74 L 18 70 L 25 77 L 23 84 Z"
+            fill="#CFC4DF" stroke="#453730" stroke-width="2.2" stroke-linejoin="round"/>
+      <!-- 본체 바위 — 면이 꺾인 실루엣이라야 '돌'로 읽힌다 -->
+      <path d="M22 84 L 27 60 L 42 46 L 60 43 L 80 53 L 90 70 L 86 84 Z"
+            fill="#E3D9F0" stroke="#453730" stroke-width="2.6" stroke-linejoin="round"/>
+      <!-- 왼쪽 그늘 면 -->
+      <path d="M22 84 L 27 60 L 42 46 L 50 68 Z"
+            fill="#D2C3EC" stroke="#453730" stroke-width="2.2" stroke-linejoin="round"/>
+      <!-- 오른쪽 면 경계 -->
+      <path d="M50 68 L 86 84" fill="none" stroke="#453730" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M60 43 L 50 68" fill="none" stroke="#B9A6D6" stroke-width="2" stroke-linecap="round"/>
+      <!-- 밑동 이끼 -->
+      <path d="M28 84 C 30 75 37 75 39 83 C 42 74 50 75 51 84 Z"
+            fill="#CBE2BA" stroke="#8FA381" stroke-width="1.8" stroke-linejoin="round"/>
+      <!-- 바위 위에 핀 작은 꽃 -->
+      <g fill="#F8D3DC" stroke="#DDA0AF" stroke-width="1.5">
+        <ellipse cx="68" cy="30" rx="4.4" ry="6.2"/>
+        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(72 68 37)"/>
+        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(144 68 37)"/>
+        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(216 68 37)"/>
+        <ellipse cx="68" cy="30" rx="4.4" ry="6.2" transform="rotate(288 68 37)"/>
+      </g>
+      <circle cx="68" cy="37" r="3.6" fill="#F6E7A9" stroke="#D9B96E" stroke-width="1.4"/>
+    </g>
+
+    <!-- 보 = 활짝 펼친 꽃잎 다섯 장 -->
+    <g id="icoPaper">
+      <g fill="#CBE2BA" stroke="#453730" stroke-width="2.4" stroke-linejoin="round">
+        <ellipse cx="50" cy="26" rx="15" ry="22"/>
+        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(72 50 52)"/>
+        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(144 50 52)"/>
+        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(216 50 52)"/>
+        <ellipse cx="50" cy="26" rx="15" ry="22" transform="rotate(288 50 52)"/>
+      </g>
+      <circle cx="50" cy="52" r="12.5" fill="#F6E7A9" stroke="#D9B96E" stroke-width="2.2"/>
+      <circle cx="46" cy="49" r="2" fill="#D9B96E"/>
+      <circle cx="54" cy="51" r="2" fill="#D9B96E"/>
+      <circle cx="50" cy="56" r="2" fill="#D9B96E"/>
+    </g>
+  </defs>
+</svg>
+
+<svg class="corner corner-tl" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigRose"/></svg>
+<svg class="corner corner-tr" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigLavender"/></svg>
+<svg class="corner corner-bl" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigLavender"/></svg>
+<svg class="corner corner-br" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigRose"/></svg>
+
+<div class="petal-layer" id="petalLayer" aria-hidden="true"></div>
+
+<main class="page">
+
+  <header class="site-head">
+    <div class="title-row">
+      <svg class="sprig sprig-l" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigRose"/></svg>
+      <h1>오늘의 꽃 가위바위보</h1>
+      <svg class="sprig sprig-r" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigLavender"/></svg>
+    </div>
+    <p class="tagline">시작을 누르면 세 칸에 불이 돌아가다 멈춥니다. 멈춘 칸이 MC가 낸 패입니다.</p>
+    <div class="tools">
+      <button class="icon-btn" id="muteBtn" type="button" aria-pressed="false" aria-label="소리 끄기">🔊</button>
+      <button class="icon-btn" id="fullBtn" type="button" aria-label="전체화면">⛶</button>
+    </div>
+  </header>
+
+  <!-- ── 가위 / 바위 / 보 세 칸 ─────────────────────────────────────────── -->
+  <section class="board idle" id="board" aria-label="가위 바위 보 세 칸">
+    <div class="panel" id="p0" data-i="0" role="img" aria-label="가위">
+      <span class="lamps" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><use href="#icoScissors"/></svg>
+      <span class="nm">가위</span>
+    </div>
+    <div class="panel" id="p1" data-i="1" role="img" aria-label="바위">
+      <span class="lamps" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><use href="#icoRock"/></svg>
+      <span class="nm">바위</span>
+    </div>
+    <div class="panel" id="p2" data-i="2" role="img" aria-label="보">
+      <span class="lamps" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><use href="#icoPaper"/></svg>
+      <span class="nm">보</span>
+    </div>
+  </section>
+
+  <!-- ── 조작 ──────────────────────────────────────────────────────────── -->
+  <div class="controls">
+    <button class="btn-start" id="startBtn" type="button">시작</button>
+    <div class="seg" role="group" aria-label="돌리는 시간">
+      <span class="lbl">돌리는 시간</span>
+      <button type="button" id="lenShort"  aria-pressed="false">짧게</button>
+      <button type="button" id="lenNormal" aria-pressed="true">보통</button>
+    </div>
+  </div>
+
+  <!-- ── 결과 ──────────────────────────────────────────────────────────── -->
+  <section class="result" id="result" aria-live="polite" aria-atomic="true">
+    <p class="wait" id="resultWait">아직 돌리지 않았습니다.</p>
+  </section>
+
+  <!-- ── 지난 판 기록 ──────────────────────────────────────────────────── -->
+  <div class="history" id="history"></div>
+
+  <p class="foot">
+    <kbd>스페이스</kbd> 또는 <kbd>Enter</kbd> 시작 · 다음 판 &nbsp;·&nbsp;
+    <kbd>M</kbd> 소리 &nbsp;·&nbsp; <kbd>F</kbd> 전체화면 &nbsp;·&nbsp; <kbd>R</kbd> 기록 지우기
+  </p>
+
+</main>
+
+<script>
+'use strict';
+/* ==========================================================================
+   오늘의 꽃 가위바위보 — MC 추첨기
+   설계 요약
+     · 결과는 시작 순간에 암호학적 균등 난수로 먼저 정하고, 연출이 그 칸에
+       도착하도록 스텝 수를 역산한다. 애니메이션이 어떻게 끊겨도 확률은 안 변한다.
+     · 불빛 간격은 등비수열로만 늘린다(62ms → 430ms). easeOut 류 수식은
+       첫 간격이 한 프레임(16.7ms)보다 짧아져 번져 보이므로 쓰지 않는다.
+     · requestAnimationFrame + 절대시각 누산기. setTimeout 재귀나 setInterval 아님.
+   ========================================================================== */
+
+/* ---------- 0. 상수 ---------- */
+var NAMES  = ['가위', '바위', '보'];
+var BEATEN_BY = ['바위', '보', '가위'];        /* NAMES[i] 를 이기는 패 */
+var TICK_HZ   = [659.26, 523.25, 783.99];      /* 가위 E5 / 바위 C5 / 보 G5 */
+var LS_MUTE = 'todayFlowerRSP.muted.v1';
+var LS_LEN  = 'todayFlowerRSP.len.v1';
+var LS_HIST = 'todayFlowerRSP.history.v1';
+var MAX_CHIPS = 8;
+
+/* 길이 모드별 스케줄 파라미터 — 총 시간은 스텝 수의 결과로만 나온다 */
+var MODES = {
+  short:  { cruise: 8,  decelN: 11, decelMax: 360 },   /* 약 3.1초 (밀당 시 3.7초) */
+  normal: { cruise: 14, decelN: 16, decelMax: 430 }    /* 약 4.7초 (밀당 시 5.3초) */
+};
+var ACCEL = [150, 126, 105, 88, 74, 65];               /* 가속 6스텝, 합 608ms */
+var CRUISE_MS   = 62;                                  /* 등속 간격 */
+var FAKE_PAUSE  = 560;                                 /* 멈춘 듯하다 한 칸 더 */
+var STRONG_TICK_AT = 200;                              /* 이 간격부터 묵직한 틱음 */
+var RESTART_LOCK = 400;                                /* 결과 뒤 재시작 잠금 */
+
+/* ---------- 1. DOM ---------- */
+var panels   = [document.getElementById('p0'), document.getElementById('p1'), document.getElementById('p2')];
+var boardEl  = document.getElementById('board');
+var startBtn = document.getElementById('startBtn');
+var resultEl = document.getElementById('result');
+var historyEl= document.getElementById('history');
+var muteBtn  = document.getElementById('muteBtn');
+var fullBtn  = document.getElementById('fullBtn');
+var lenShort = document.getElementById('lenShort');
+var lenNormal= document.getElementById('lenNormal');
+var petalLayer = document.getElementById('petalLayer');
+
+/* ---------- 2. 상태 ---------- */
+var state = 'idle';            /* 'idle' | 'spinning' | 'result' */
+var rafId = null;
+var muted = false;
+var lenMode = 'normal';
+var rounds = [];
+var lastEndAt = 0;             /* 결과 확정 시각 — 연타 방지 */
+
+/* 회전 중 데이터 */
+var spin = null;
+/* spin = { intervals:[], step:0, nextAt:0, cur:0, winner:0, startIdx:0 } */
+
+/* ---------- 3. 저장소 (어떤 이유로든 실패해도 게임은 돌아간다) ---------- */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+
+function loadPrefs(){
+  muted = lsGet(LS_MUTE) === '1';
+  var m = lsGet(LS_LEN);
+  if (m === 'short' || m === 'normal') lenMode = m;
+  try{
+    var raw = lsGet(LS_HIST);
+    if (raw){
+      var arr = JSON.parse(raw);
+      if (Object.prototype.toString.call(arr) === '[object Array]'){
+        rounds = arr.filter(function(n){ return n === 0 || n === 1 || n === 2; }).slice(-MAX_CHIPS);
+      }
+    }
+  }catch(e){ rounds = []; }
+}
+function saveHistory(){ lsSet(LS_HIST, JSON.stringify(rounds)); }
+
+/* ---------- 4. 균등 난수 (0,1,2) — 2^32 를 3으로 나눈 나머지 구간은 버린다 ---------- */
+var CRYPTO = (window.crypto && window.crypto.getRandomValues) ? window.crypto : null;
+function pick3(){
+  if (CRYPTO){
+    var buf = new Uint32Array(1);
+    /* 4294967296 % 3 === 1 이므로 마지막 1개 값만 버리면 완전 균등해진다 */
+    var limit = 4294967295;            /* 0 .. 4294967294 (= 3의 배수 개) */
+    for (var guard = 0; guard < 64; guard++){
+      CRYPTO.getRandomValues(buf);
+      if (buf[0] < limit) return buf[0] % 3;
+    }
+  }
+  return Math.floor(Math.random() * 3) % 3;
+}
+function coin(){
+  if (CRYPTO){
+    var b = new Uint8Array(1);
+    CRYPTO.getRandomValues(b);
+    return b[0] < 128;
+  }
+  return Math.random() < 0.5;
+}
+
+/* ==========================================================================
+   5. 오디오 — Web Audio 합성. 음원 파일 0개.
+      회전 중 멜로디는 쓰지 않는다(MC 멘트와 겹친다). 틱음 + 확정 팡파레만.
+   ========================================================================== */
+var AC = window.AudioContext || window.webkitAudioContext || null;
+var actx = null, master = null, tickBus = null, melBus = null;
+
+function ensureAudio(){
+  if (!AC) return;
+  if (!actx){
+    try{
+      actx = new AC();
+      master = actx.createGain();
+      master.gain.value = muted ? 0 : 0.9;
+      master.connect(actx.destination);
+
+      tickBus = actx.createGain(); tickBus.gain.value = 1; tickBus.connect(master);
+
+      melBus = actx.createGain(); melBus.gain.value = 1; melBus.connect(master);
+      var delay = actx.createDelay(0.6); delay.delayTime.value = 0.26;
+      var fb = actx.createGain(); fb.gain.value = 0.26;
+      var wet = actx.createGain(); wet.gain.value = 0.2;
+      melBus.connect(delay); delay.connect(fb); fb.connect(delay);
+      delay.connect(wet); wet.connect(master);
+    }catch(e){ actx = null; return; }
+  }
+  /* iOS 는 인터럽트 후 비표준 'interrupted' 를 보고하므로 'running' 부정형으로 복구 */
+  if (actx.state !== 'running'){ actx.resume().catch(function(){}); }
+}
+function applyMute(){
+  if (actx && master) master.gain.setTargetAtTime(muted ? 0 : 0.9, actx.currentTime, 0.015);
+}
+/* 오르골 음색 — 사인 기본음 + 4배음 반짝임 */
+function pluck(freq, t, vol, dur, bus){
+  if (!actx) return;
+  var g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0006, t + dur);
+  var o1 = actx.createOscillator(); o1.type = 'sine'; o1.frequency.value = freq;
+  var o2 = actx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq * 4;
+  var g2 = actx.createGain(); g2.gain.value = 0.12;
+  o1.connect(g); o2.connect(g2); g2.connect(g);
+  g.connect(bus || melBus);
+  o1.start(t); o2.start(t);
+  o1.stop(t + dur + 0.1); o2.stop(t + dur + 0.1);
+}
+/* 칸 통과 틱음 — 칸마다 음높이가 달라 눈을 떼도 귀로 구분된다
+   strong=true 면 감속 구간의 낮고 묵직한 '탁' */
+function playTick(idx, strong){
+  if (!actx || actx.state !== 'running') return;
+  var base = TICK_HZ[idx] || 659.26;
+  var t = actx.currentTime;
+  var o = actx.createOscillator(); o.type = 'sine';
+  var hi = strong ? base * 1.15 : base * 2.0;
+  var lo = strong ? base * 0.56 : base * 1.05;
+  o.frequency.setValueAtTime(hi, t);
+  o.frequency.exponentialRampToValueAtTime(lo, t + (strong ? 0.09 : 0.07));
+  var g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  /* 현장 마이크 간섭을 줄이려고 볼륨은 낮게 둔다 */
+  g.gain.linearRampToValueAtTime(strong ? 0.18 : 0.10, t + 0.004);
+  g.gain.exponentialRampToValueAtTime(0.0004, t + (strong ? 0.13 : 0.085));
+  o.connect(g); g.connect(tickBus);
+  o.start(t); o.stop(t + (strong ? 0.16 : 0.1));
+}
+/* 확정 팡파레 — 상승 아르페지오 + 마무리 화음 */
+function playFanfare(){
+  if (!actx) return;
+  var t = actx.currentTime + 0.03;
+  var seq = [[523.25,0],[659.26,0.09],[783.99,0.18],[1046.5,0.28],[1318.51,0.40]];
+  for (var i = 0; i < seq.length; i++) pluck(seq[i][0], t + seq[i][1], 0.24, 0.7);
+  var chord = [1046.5, 1318.51, 1567.98];
+  for (var j = 0; j < chord.length; j++) pluck(chord[j], t + 0.56 + j * 0.012, 0.16, 1.5);
+}
+
+/* ==========================================================================
+   6. 스케줄 — 결과를 먼저 정하고 그 칸에 도착하는 간격 배열을 만든다
+   ========================================================================== */
+function buildSchedule(startIdx, winner, mode){
+  var M = MODES[mode] || MODES.normal;
+  var fake = coin();                                   /* 멈춘 듯 한 칸 더 */
+  var fixed = ACCEL.length + M.decelN + (fake ? 1 : 0);
+
+  /* 등속 스텝 수를 0~2 늘려 착지 칸을 맞춘다 — 보정을 싼 구간에서 흡수한다 */
+  var cruiseN = M.cruise;
+  while ((startIdx + fixed + cruiseN) % 3 !== winner) cruiseN++;
+
+  var iv = ACCEL.slice();
+  var i;
+  for (i = 0; i < cruiseN; i++) iv.push(CRUISE_MS);
+
+  /* 감속: 간격을 등비로 늘린다. r = (max/cruise)^(1/N) */
+  var r = Math.pow(M.decelMax / CRUISE_MS, 1 / M.decelN);
+  var cur = CRUISE_MS;
+  for (i = 0; i < M.decelN; i++){ cur *= r; iv.push(cur); }
+
+  if (fake) iv.push(FAKE_PAUSE);
+
+  return iv;
+}
+
+/* ==========================================================================
+   7. 점등 렌더 — 클래스만 토글한다 (box-shadow 트랜지션 없음)
+   ========================================================================== */
+function lightOnly(idx){
+  for (var i = 0; i < 3; i++){
+    panels[i].classList.toggle('lit', i === idx);
+    panels[i].classList.remove('won', 'dim');
+  }
+}
+function clearLights(){
+  for (var i = 0; i < 3; i++) panels[i].classList.remove('lit', 'won', 'dim');
+}
+
+/* ==========================================================================
+   8. 회전 — rAF + 절대시각 누산기
+   ========================================================================== */
+function startSpin(){
+  if (state === 'spinning') return;
+  if (state === 'result' && (performance.now() - lastEndAt) < RESTART_LOCK) return;
+
+  ensureAudio();
+
+  var startIdx = (spin && typeof spin.cur === 'number') ? spin.cur : pick3();
+  var winner = pick3();                                /* ← 결과는 여기서 확정 */
+  var intervals = buildSchedule(startIdx, winner, lenMode);
+
+  spin = {
+    intervals: intervals,
+    step: 0,
+    cur: startIdx,
+    winner: winner,
+    startIdx: startIdx,
+    nextAt: performance.now() + intervals[0]
+  };
+
+  state = 'spinning';
+  boardEl.classList.remove('idle');
+  startBtn.disabled = true;
+  startBtn.textContent = '돌고 있어요…';
+  resultEl.innerHTML = '<p class="spinning">돌리는 중…</p>';
+  lightOnly(startIdx);
+
+  rafId = requestAnimationFrame(frame);
+}
+
+function frame(now){
+  if (state !== 'spinning'){ rafId = null; return; }
+
+  /* 한 프레임에 최대 3스텝만 따라잡고, 그 구간의 틱음은 1회로 합친다 */
+  var moved = 0, lastIv = 0;
+  while (spin.step < spin.intervals.length && now >= spin.nextAt && moved < 3){
+    lastIv = spin.intervals[spin.step];
+    spin.cur = (spin.cur + 1) % 3;
+    spin.step++;
+    moved++;
+    if (spin.step < spin.intervals.length) spin.nextAt += spin.intervals[spin.step];
+  }
+
+  if (moved){
+    lightOnly(spin.cur);
+    playTick(spin.cur, lastIv >= STRONG_TICK_AT);
+  }
+
+  if (spin.step >= spin.intervals.length){ lockIn(); return; }
+  rafId = requestAnimationFrame(frame);
+}
+
+function lockIn(){
+  /* 안전장치 — 연출이 어떻게 끊겼더라도 시작 때 정한 승자와 일치시킨다 */
+  if (spin.cur !== spin.winner) spin.cur = spin.winner;
+
+  var w = spin.cur;
+  state = 'result';
+  lastEndAt = performance.now();
+  rafId = null;
+
+  for (var i = 0; i < 3; i++){
+    panels[i].classList.remove('lit');
+    panels[i].classList.toggle('won', i === w);
+    panels[i].classList.toggle('dim', i !== w);
+  }
+  panels[w].classList.add('lit');
+
+  resultEl.innerHTML =
+    '<div class="show">' +
+      '<p class="shout">MC는 ' + NAMES[w] + '!</p>' +
+      '<p class="hint">이기려면 <b>' + BEATEN_BY[w] + '</b></p>' +
+    '</div>';
+
+  rounds.push(w);
+  if (rounds.length > MAX_CHIPS) rounds = rounds.slice(-MAX_CHIPS);
+  saveHistory();
+  renderHistory(true);
+
+  burstPetals(w);
+  playFanfare();
+
+  startBtn.disabled = false;
+  startBtn.textContent = '다시 돌리기';
+  startBtn.focus({ preventScroll: true });
+}
+
+/* 탭을 떠났다 돌아오면 남은 시간부터 이어 돌린다(결과를 건너뛰지 않는다) */
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden || state !== 'spinning' || !spin) return;
+  var iv = spin.intervals[spin.step] || CRUISE_MS;
+  spin.nextAt = performance.now() + iv;
+});
+
+/* ==========================================================================
+   9. 꽃잎 흩날림 — animationend 에서 반드시 제거한다
+   ========================================================================== */
+var PETAL_COLORS = ['#F8D3DC', '#E3D9F0', '#DCE9D0', '#F6E7A9', '#F7C9D5'];
+function burstPetals(idx){
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var box = panels[idx].getBoundingClientRect();
+  var cx = box.left + box.width / 2;
+  var cy = box.top + box.height / 2;
+  for (var i = 0; i < 9; i++){
+    (function(k){
+      var el = document.createElement('span');
+      el.className = 'petal';
+      var ang = (-120 + (240 / 8) * k) * Math.PI / 180;
+      var dist = 130 + (k % 3) * 46;
+      el.style.left = (cx - 8) + 'px';
+      el.style.top  = (cy - 10) + 'px';
+      el.style.background = PETAL_COLORS[k % PETAL_COLORS.length];
+      el.style.setProperty('--dx', Math.round(Math.cos(ang) * dist) + 'px');
+      el.style.setProperty('--dy', Math.round(Math.abs(Math.sin(ang)) * dist * 0.5 + 170) + 'px');
+      el.style.setProperty('--rot', (k % 2 ? 1 : -1) * (160 + k * 24) + 'deg');
+      var life = 1100 + k * 110;
+      el.style.animation = 'petalFall ' + life + 'ms ease-out forwards';
+      function drop(){ if (el.parentNode) el.parentNode.removeChild(el); }
+      el.addEventListener('animationend', drop);
+      /* 탭이 숨겨져 애니메이션이 멈추면 animationend 가 오지 않는다 — 긴 방송에서
+         노드가 쌓이지 않도록 시간 기준 제거를 함께 건다 */
+      setTimeout(drop, life + 1200);
+      petalLayer.appendChild(el);
+    })(i);
+  }
+}
+
+/* ==========================================================================
+   10. 기록 칩
+   ========================================================================== */
+function renderHistory(freshLast){
+  historyEl.innerHTML = '';
+  if (!rounds.length) return;
+  var cap = document.createElement('span');
+  cap.className = 'cap';
+  cap.textContent = '지난 판';
+  historyEl.appendChild(cap);
+  for (var i = 0; i < rounds.length; i++){
+    var c = document.createElement('span');
+    c.className = 'chip' + (freshLast && i === rounds.length - 1 ? ' fresh' : '');
+    c.textContent = NAMES[rounds[i]];
+    historyEl.appendChild(c);
+  }
+}
+function clearHistory(){
+  rounds = [];
+  saveHistory();
+  renderHistory(false);
+}
+
+/* ==========================================================================
+   11. 조작 — 버튼 / 키보드
+   ========================================================================== */
+function syncMuteBtn(){
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+  muteBtn.setAttribute('aria-label', muted ? '소리 켜기' : '소리 끄기');
+}
+function toggleMute(){
+  muted = !muted;
+  lsSet(LS_MUTE, muted ? '1' : '0');
+  syncMuteBtn();
+  ensureAudio();
+  applyMute();
+}
+function syncLenBtns(){
+  lenShort.setAttribute('aria-pressed',  lenMode === 'short'  ? 'true' : 'false');
+  lenNormal.setAttribute('aria-pressed', lenMode === 'normal' ? 'true' : 'false');
+}
+function setLen(m){
+  if (state === 'spinning') return;
+  lenMode = m; lsSet(LS_LEN, m); syncLenBtns();
+}
+function toggleFull(){
+  try{
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }catch(e){}
+}
+
+startBtn.addEventListener('click', startSpin);
+muteBtn.addEventListener('click', toggleMute);
+fullBtn.addEventListener('click', toggleFull);
+lenShort.addEventListener('click', function(){ setLen('short'); });
+lenNormal.addEventListener('click', function(){ setLen('normal'); });
+
+document.addEventListener('keydown', function(e){
+  if (e.repeat) return;                                  /* 길게 누름 이중 발사 차단 */
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  var tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  var k = e.key;
+  /* 포커스가 버튼에 있을 때 스페이스·엔터를 가로채면 그 버튼이 눌리지 않는다.
+     (Tab 으로 '짧게' 에 간 뒤 Enter → 길이가 안 바뀌고 판이 돌아버린다)
+     시작 버튼은 click 리스너가 있으므로 그냥 넘겨도 똑같이 시작된다. */
+  if (k === ' ' || k === 'Spacebar' || k === 'Enter'){
+    var ctl = e.target && e.target.closest && e.target.closest('button, a, [role="button"]');
+    if (ctl) return;
+    e.preventDefault();
+    startSpin();
+  } else if (k === 'm' || k === 'M' || k === 'ㅡ'){
+    e.preventDefault(); toggleMute();
+  } else if (k === 'f' || k === 'F' || k === 'ㄹ'){
+    e.preventDefault(); toggleFull();
+  } else if (k === 'r' || k === 'R' || k === 'ㄱ'){
+    if (state === 'spinning') return;
+    e.preventDefault(); clearHistory();
+  }
+});
+
+/* 첫 제스처에서 오디오를 깨워 둬 첫 소리 지연을 없앤다 */
+function warmAudio(){
+  ensureAudio();
+  window.removeEventListener('pointerdown', warmAudio, true);
+  window.removeEventListener('keydown', warmAudio, true);
+}
+window.addEventListener('pointerdown', warmAudio, true);
+window.addEventListener('keydown', warmAudio, true);
+
+/* ==========================================================================
+   12. 공정성 자체 점검 — 콘솔에서 __fairness(10000) 로 분포를 실측한다
+   ========================================================================== */
+window.__fairness = function(n){
+  n = n || 10000;
+  var cnt = [0, 0, 0], landed = [0, 0, 0], i, w, iv, s;
+  for (i = 0; i < n; i++){
+    var startIdx = pick3();
+    w = pick3();
+    cnt[w]++;
+    /* 스케줄이 실제로 그 칸에 도착하는지도 함께 검증한다 */
+    iv = buildSchedule(startIdx, w, i % 2 ? 'short' : 'normal');
+    s = (startIdx + iv.length) % 3;
+    landed[s === w ? w : (w + 1) % 3]++;
+    if (s !== w) { console.error('착지 불일치!', startIdx, w, iv.length); return null; }
+  }
+  var out = {};
+  for (i = 0; i < 3; i++) out[NAMES[i]] = (cnt[i] / n * 100).toFixed(2) + '%';
+  console.log('시행 ' + n + '회 분포:', out, '/ 착지 불일치 0건');
+  return out;
+};
+/* 연출 길이 실측 — 콘솔에서 __durations() */
+window.__durations = function(){
+  var r = {};
+  ['short', 'normal'].forEach(function(m){
+    var mn = Infinity, mx = 0;
+    for (var i = 0; i < 400; i++){
+      var iv = buildSchedule(pick3(), pick3(), m);
+      var sum = 0;
+      for (var j = 0; j < iv.length; j++) sum += iv[j];
+      if (sum < mn) mn = sum;
+      if (sum > mx) mx = sum;
+    }
+    r[m] = (mn / 1000).toFixed(2) + '초 ~ ' + (mx / 1000).toFixed(2) + '초';
+  });
+  console.log('회전 길이:', r);
+  return r;
+};
+
+/* ---------- 13. 초기화 ---------- */
+loadPrefs();
+syncMuteBtn();
+syncLenBtns();
+renderHistory(false);
+clearLights();
+</script>
+</body>
+</html>
