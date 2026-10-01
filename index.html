@@ -376,6 +376,8 @@ h1{
 /* ==========================================================================
    8. 꽃잎 흩날림 — 확정 연출. animationend 에서 반드시 제거한다
    ========================================================================== */
+/* 배경 꽃잎 캔버스 — .page(z-index:1) 아래라 카드 뒤로 지나간다 */
+.fx{ position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none }
 .petal-layer{ position:fixed; inset:0; z-index:5; pointer-events:none; overflow:hidden }
 .petal{ position:absolute; width:16px; height:20px; border-radius:60% 60% 54% 54%;
   will-change:transform, opacity; }
@@ -464,6 +466,8 @@ h1{
 <svg class="corner corner-bl" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigLavender"/></svg>
 <svg class="corner corner-br" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigRose"/></svg>
 
+<!-- 배경 꽃잎 — 화면 전체에 깔리고 그림·버튼보다 뒤에 있다 -->
+<canvas class="fx" id="fx" aria-hidden="true"></canvas>
 <div class="petal-layer" id="petalLayer" aria-hidden="true"></div>
 
 <main class="page">
@@ -852,6 +856,7 @@ function startSpin(){
   panelEl.classList.remove('won');
   panelEl.classList.add('lit');         /* 도는 동안 칸에 불이 들어와 있다 */
 
+  petalRainStart();
   rafId = requestAnimationFrame(frame);
 }
 
@@ -909,6 +914,7 @@ function lockIn(){
   renderHistory(true);
 
   burstPetals();
+  petalRainStop();                     /* 새 꽃잎은 그만 — 남은 것만 마저 떨어진다 */
   playFanfare();
 
   startBtn.disabled = false;
@@ -955,6 +961,111 @@ function burstPetals(){
     })(i);
   }
 }
+
+/* ==========================================================================
+   9-2. 배경 꽃잎 — 시작을 누르면 화면 전체에 연분홍 꽃잎이 흩날린다
+        · 캔버스 한 장에 그린다(DOM 노드를 쌓지 않는다)
+        · 도는 동안만 새 꽃잎을 내보내고, 결과가 나오면 남은 것만 마저 떨어진다
+        · 꽃잎이 하나도 없으면 루프를 멈춘다 — 쉬는 동안 CPU 를 쓰지 않는다
+   ========================================================================== */
+var fxCanvas = document.getElementById('fx');
+var fxCtx = (fxCanvas && fxCanvas.getContext) ? fxCanvas.getContext('2d') : null;
+var fxPetals = [], fxSprites = [], fxRaf = null, fxEmit = false, fxLast = 0, fxCarry = 0;
+var fxW = 0, fxH = 0;
+
+function fxResize(){
+  if (!fxCtx) return;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  fxW = window.innerWidth; fxH = window.innerHeight;
+  fxCanvas.width = Math.round(fxW * dpr); fxCanvas.height = Math.round(fxH * dpr);
+  fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+/* 꽃잎 그림을 미리 그려 둔다 — 매 프레임에는 찍기만 한다.
+   앞 세 장은 낮 화면용(크림색 배경에서도 보이게 조금 진한 연분홍),
+   뒤 세 장은 밤 화면용(어두운 배경에서 은은하게 뜨는 흰 분홍) */
+function fxMakeSprites(){
+  var tones = [['#FFE3EA', '#F6AFC3'], ['#FFD9E3', '#F2A0B8'], ['#FFEAF0', '#F8BDCD'],
+               ['#FFF1F5', '#F9CBD8'], ['#FFEAF0', '#F6BACB'], ['#FFF6F8', '#FAD7E1']];
+  for (var i = 0; i < tones.length; i++){
+    var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+    var g = c.getContext('2d');
+    var grad = g.createLinearGradient(32, 6, 32, 58);
+    grad.addColorStop(0, tones[i][0]); grad.addColorStop(1, tones[i][1]);
+    g.fillStyle = grad;
+    g.beginPath();                       /* 끝이 살짝 패인 벚꽃잎 모양 */
+    g.moveTo(32, 58);
+    g.bezierCurveTo(8, 44, 6, 18, 24, 7);
+    g.quadraticCurveTo(29, 13, 32, 9);
+    g.quadraticCurveTo(35, 13, 40, 7);
+    g.bezierCurveTo(58, 18, 56, 44, 32, 58);
+    g.fill();
+    g.strokeStyle = 'rgba(226,138,165,.38)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(32, 54); g.quadraticCurveTo(30, 34, 32, 16); g.stroke();
+    fxSprites.push(c);
+  }
+}
+function fxMax(){
+  var n = Math.round(fxW * fxH / 15000);
+  return n < 26 ? 26 : (n > 110 ? 110 : n);
+}
+function fxSpawn(y){
+  var size = 14 + Math.random() * 22;
+  fxPetals.push({
+    x: Math.random() * (fxW + 160) - 120, y: y,
+    size: size,
+    vy: 46 + Math.random() * 62 + size * 0.9,        /* 큰 꽃잎이 조금 더 빨리 */
+    vx: 10 + Math.random() * 30,                     /* 바람은 오른쪽으로 살짝 */
+    amp: 16 + Math.random() * 30, hz: 0.35 + Math.random() * 0.5, ph: Math.random() * 6.283,
+    rot: Math.random() * 6.283, vr: (Math.random() - 0.5) * 2.2,
+    flip: Math.random() * 6.283, vf: 1.2 + Math.random() * 2.2,
+    a: night ? (0.42 + Math.random() * 0.36) : (0.62 + Math.random() * 0.33),
+    sp: fxSprites[(night ? 3 : 0) + ((Math.random() * 3) | 0)]
+  });
+}
+function fxFrame(now){
+  var dt = (now - fxLast) / 1000; fxLast = now;
+  if (dt > 0.05) dt = 0.05;                          /* 탭 복귀 뒤 한꺼번에 튀지 않게 */
+  if (dt < 0) dt = 0;
+
+  if (fxEmit){
+    fxCarry += dt * 26;                              /* 초당 26장씩 채운다 */
+    var max = fxMax();
+    while (fxCarry >= 1){ fxCarry -= 1; if (fxPetals.length < max) fxSpawn(-30 - Math.random() * 40); }
+  }
+
+  fxCtx.clearRect(0, 0, fxW, fxH);
+  var t = now / 1000;
+  for (var i = fxPetals.length - 1; i >= 0; i--){
+    var p = fxPetals[i];
+    p.y += p.vy * dt;
+    p.x += p.vx * dt;
+    p.rot += p.vr * dt; p.flip += p.vf * dt;
+    if (p.y > fxH + 40){ fxPetals.splice(i, 1); continue; }
+    var x = p.x + Math.sin(t * 6.283 * p.hz + p.ph) * p.amp;
+    var sx = 0.35 + 0.65 * Math.abs(Math.cos(p.flip)); /* 뒤집히며 떨어지는 느낌 */
+    fxCtx.save();
+    fxCtx.globalAlpha = p.a;
+    fxCtx.translate(x, p.y); fxCtx.rotate(p.rot); fxCtx.scale(sx, 1);
+    fxCtx.drawImage(p.sp, -p.size / 2, -p.size / 2, p.size, p.size);
+    fxCtx.restore();
+  }
+
+  if (!fxEmit && !fxPetals.length){ fxRaf = null; fxCtx.clearRect(0, 0, fxW, fxH); return; }
+  fxRaf = requestAnimationFrame(fxFrame);
+}
+function petalRainStart(){
+  if (!fxCtx) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!fxSprites.length) fxMakeSprites();
+  if (!fxW) fxResize();
+  fxEmit = true;
+  /* 누르자마자 보이도록 화면 위쪽 절반에 몇 장을 미리 뿌려 둔다 */
+  var seed = Math.round(fxMax() * 0.45);
+  for (var i = 0; i < seed && fxPetals.length < fxMax(); i++) fxSpawn(-40 + Math.random() * fxH * 0.5);
+  if (!fxRaf){ fxLast = performance.now(); fxRaf = requestAnimationFrame(fxFrame); }
+}
+function petalRainStop(){ fxEmit = false; }
+window.addEventListener('resize', fxResize);
 
 /* ==========================================================================
    10. 기록 칩
