@@ -581,8 +581,8 @@ var MAX_CHIPS = 8;
 
 /* 길이 모드별 스케줄 파라미터 — 총 시간은 스텝 수의 결과로만 나온다 */
 var MODES = {
-  short:  { cruise: 12, decelN: 10, decelMax: 290 },   /* 약 2.3초 (밀당 시 2.8초) */
-  normal: { cruise: 20, decelN: 15, decelMax: 340 }    /* 약 3.5초 (밀당 시 4.0초) */
+  short:  { cruise: 52, decelN: 19, decelMax: 400 },   /* 약 5.8초 (밀당 시 6.2초) */
+  normal: { cruise: 57, decelN: 24, decelMax: 430 }    /* 약 7.0초 (밀당 시 7.4초) */
 };
 var ACCEL = [100, 84, 70, 60, 50, 44];                 /* 가속 6스텝, 합 408ms */
 var CRUISE_MS   = 42;                                  /* 등속 간격 — 초당 24칸 */
