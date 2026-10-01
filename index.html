@@ -257,7 +257,7 @@ h1{
 :root[data-theme="dark"] .veil span{ color:var(--rose-line); text-shadow:0 0 calc(var(--slot) * .05) rgba(0,0,0,.55) }
 /* 뽑힌 패 배지 — 결과가 확정되면 그림 왼쪽 아래에 크게 뜬다. 크기는 칸에 비례 */
 .pick{
-  position:absolute; left:4%; bottom:4%; z-index:3;
+  position:absolute; left:calc(var(--slot) * -.17); bottom:calc(var(--slot) * .035); z-index:3;
   /* 폭·높이를 같은 식으로 직접 준다 — aspect-ratio 를 모르는 구형 브라우저에서도 원이 유지된다 */
   width:calc(var(--slot) * .37); height:calc(var(--slot) * .37); border-radius:50%;
   background:#FFFDF7;
@@ -265,7 +265,7 @@ h1{
   box-shadow:0 calc(var(--slot) * .015) calc(var(--slot) * .05) rgba(40,30,25,.38);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:calc(var(--slot) * .006);
-  opacity:0; transform:scale(.35); transform-origin:22% 78%;
+  opacity:0; transform:scale(.35); transform-origin:50% 60%;
   pointer-events:none;
 }
 .pick-ico{ font-size:calc(var(--slot) * .17); line-height:1.05 }
@@ -415,7 +415,7 @@ h1{
    이 값을 뺀 나머지 높이를 전부 그림(칸)에 준다 */
 @media (max-height: 840px){ :root{ --over: 430px } }
 @media (max-height: 680px){ :root{ --over: 402px } }
-@media (max-width: 620px){ :root{ --over: 536px } }
+@media (max-width: 620px){ :root{ --over: 536px } .pick{ left:calc(var(--slot) * -.07) } }
 @media (max-width: 620px) and (min-height: 841px){ :root{ --over: 620px } }
 
 @media (prefers-reduced-motion: reduce){
@@ -528,11 +528,12 @@ h1{
         </div>
         <!-- 처음 대기화면 가림막 — 그림은 비칠 듯 연하게만 보이고 물음표가 뜬다 -->
         <div class="veil" aria-hidden="true"><span>?</span></div>
-        <!-- 뽑힌 패 배지 — 화면을 작게 보는 사람도 무엇이 나왔는지 알 수 있게 -->
-        <div class="pick" id="pick" aria-hidden="true">
-          <span class="pick-ico" id="pickIco"></span>
-          <span class="pick-nm" id="pickNm"></span>
-        </div>
+      </div>
+      <!-- 뽑힌 패 배지 — 화면을 작게 보는 사람도 무엇이 나왔는지 알 수 있게.
+           캐릭터를 덜 가리도록 칸 왼쪽 테두리에 걸쳐 둔다(그래서 슬롯 창 밖에 있다) -->
+      <div class="pick" id="pick" aria-hidden="true">
+        <span class="pick-ico" id="pickIco"></span>
+        <span class="pick-nm" id="pickNm"></span>
       </div>
     </div>
   </section>
