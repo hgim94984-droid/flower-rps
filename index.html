@@ -36,7 +36,9 @@
   /* 손그림 느낌의 삐뚤한 카드 모서리 — 자매 게임과 같은 값 */
   --hand-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
   /* 슬롯 한 칸의 높이. 창 높이와 슬롯 높이가 같아야 translateY(-25%) 가 정확히 한 칸이다 */
-  --slot: clamp(150px, min(24vw, 30vh), 290px);
+  /* 화면 높이에서 그림 말고 나머지가 차지하는 높이(--over)를 뺀 전부를 그림에 준다 */
+  --over: 524px;
+  --slot: clamp(150px, min(80vw, calc(100vh - var(--over))), 600px);
 }
 /* ── 나이트 모드 — 밤에 방송할 때 눈이 부시지 않게. 기본은 라이트, 버튼으로 전환 ── */
 :root[data-theme="dark"]{
@@ -142,7 +144,7 @@ h1{
 :root[data-theme="dark"] .reel-window::after{
   background:linear-gradient(rgba(0,0,0,.30), rgba(0,0,0,0) 11%, rgba(0,0,0,0) 89%, rgba(0,0,0,.30));
 }
-.tagline{ margin-top:7px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
+.tagline{ display:none; margin-top:7px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
 
 /* 우상단 작은 도구 버튼들 */
 .tools{ position:absolute; top:10px; right:0; display:flex; gap:8px }
@@ -178,7 +180,7 @@ h1{
   background:var(--card);
   border:2.6px solid var(--line);
   border-radius:var(--hand-radius);
-  padding:clamp(13px,1.6vw,20px) clamp(10px,1.4vw,18px) clamp(12px,1.5vw,18px);
+  padding:clamp(9px,1vw,13px);
   box-shadow:0 12px 28px rgba(99,74,56,.11);
   /* 대기 상태: 채도를 내려 가라앉혀 둔다 */
   filter:saturate(.72);
@@ -250,9 +252,9 @@ h1{
 /* ==========================================================================
    5. 시작 버튼 + 길이 선택
    ========================================================================== */
-.controls{ margin-top:clamp(14px,2vw,22px); display:flex; flex-direction:column; align-items:center; gap:14px }
+.controls{ margin-top:clamp(12px,1.6vw,18px); display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px 14px }
 .btn-start{
-  width:min(420px, 92%);
+  width:min(380px, 92%);
   padding:clamp(13px,1.5vw,19px) 28px;
   border:none; border-radius:999px;
   background:linear-gradient(180deg, var(--rose) 0%, var(--rose-deep) 100%);
@@ -348,7 +350,6 @@ h1{
 @media (max-height: 840px){
   .site-head{ padding:4px 0 0 }
   .bi{ margin-bottom:6px }
-  .tagline{ margin-top:5px; font-size:.84rem }
   .foot{ display:none }
   .controls{ margin-top:10px; gap:9px }
   .btn-start{ padding:11px 24px }
@@ -358,10 +359,15 @@ h1{
   .history{ margin-top:8px; min-height:32px }
 }
 @media (max-height: 680px){
-  :root{ --slot: clamp(150px, min(24vw, 27.5vh), 290px) }
-  .tagline{ display:none }
   .board{ margin-top:8px }
 }
+
+/* 그림 말고 나머지 요소의 높이 — 화면 조건마다 실측해서 맞춘 값.
+   이 값을 뺀 나머지 높이를 전부 그림(칸)에 준다 */
+@media (max-height: 840px){ :root{ --over: 430px } }
+@media (max-height: 680px){ :root{ --over: 402px } }
+@media (max-width: 620px){ :root{ --over: 536px } }
+@media (max-width: 620px) and (min-height: 841px){ :root{ --over: 620px } }
 
 @media (prefers-reduced-motion: reduce){
   .board.idle .panel{ animation:none }
@@ -438,16 +444,16 @@ h1{
         <!-- 슬롯 네 장: 가위·바위·보 + 가위(복제). 복제 칸에서 티 안 나게 처음으로 되돌린다 -->
         <div class="reel" id="reel" aria-hidden="true">
           <div class="slot">
-            <img class="pic" src="char-gawi.jpg" width="600" height="600" alt="가위" decoding="async">
+            <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="async">
           </div>
           <div class="slot">
-            <img class="pic" src="char-bawi.jpg" width="600" height="600" alt="바위" decoding="async">
+            <img class="pic" src="char-bawi.jpg" width="900" height="900" alt="바위" decoding="async">
           </div>
           <div class="slot">
-            <img class="pic" src="char-bo.jpg" width="600" height="600" alt="보" decoding="async">
+            <img class="pic" src="char-bo.jpg" width="900" height="900" alt="보" decoding="async">
           </div>
           <div class="slot">
-            <img class="pic" src="char-gawi.jpg" width="600" height="600" alt="가위" decoding="async">
+            <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="async">
           </div>
         </div>
       </div>
