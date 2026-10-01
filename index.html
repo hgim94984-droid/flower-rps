@@ -31,6 +31,8 @@
   --font-body:  "Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   /* 손그림 느낌의 삐뚤한 카드 모서리 — 자매 게임과 같은 값 */
   --hand-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
+  /* 슬롯 한 칸의 높이. 창 높이와 슬롯 높이가 같아야 translateY(-25%) 가 정확히 한 칸이다 */
+  --slot: clamp(140px, min(21vw, 27vh), 242px);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 [hidden]{display:none !important}
@@ -80,11 +82,11 @@ body::after{
 /* ==========================================================================
    3. 헤더
    ========================================================================== */
-.site-head{ text-align:center; padding:12px 0 2px; position:relative }
+.site-head{ text-align:center; padding:8px 0 2px; position:relative }
 /* 오늘의 꽃 BI — 바탕화면 원본(final_오늘의꽃_bi.png)의 여백을 잘라 넣었다 */
 .bi{
   display:block; height:auto; margin:0 auto 10px;
-  width:clamp(150px, 17vw, 250px);
+  width:clamp(118px, min(15vw, 13vh), 222px);
   filter:drop-shadow(0 7px 14px rgba(150,90,60,.20));
 }
 .title-row{ display:flex; align-items:center; justify-content:center; gap:10px }
@@ -92,12 +94,12 @@ body::after{
 .sprig-r{ transform:scaleX(-1) }
 h1{
   font-family:var(--font-disp); font-weight:700;
-  font-size:clamp(1.8rem, 4.6vw, 2.9rem); line-height:1.16;
+  font-size:clamp(1.6rem, min(4.2vw, 5.4vh), 2.7rem); line-height:1.16;
   letter-spacing:.02em; color:var(--ink);
   background:linear-gradient(transparent 62%, rgba(244,175,193,.95) 62% 90%, transparent 90%);
   padding:0 .18em; white-space:nowrap;
 }
-.tagline{ margin-top:9px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
+.tagline{ margin-top:7px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
 
 /* 우상단 작은 도구 버튼들 */
 .tools{ position:absolute; top:10px; right:0; display:flex; gap:8px }
@@ -118,25 +120,26 @@ h1{
 }
 
 /* ==========================================================================
-   4. 가위바위보 패널 3칸 — "불이 들어온다"를 꽃이 피는 것으로 번역
-      · 점등은 opacity / transform / filter 만 바꾼다 (box-shadow 트랜지션 금지)
+   4. 칸 하나 — 그 안에서 가위·바위·보가 슬롯처럼 위로 넘어간다
+      · 칸 높이의 정확히 한 칸만큼 올리려고 translateY 를 % 로 쓴다.
+        퍼센트는 요소 '자신의 높이' 기준이라 창 크기가 바뀌어도 어긋나지 않는다.
+      · 슬롯은 네 장(가위·바위·보·가위 복제). 마지막 복제 칸에서 티 안 나게 처음으로 되돌린다.
    ========================================================================== */
 .board{
-  display:grid; grid-template-columns:repeat(3, 1fr);
-  gap:clamp(8px, 1.6vw, 20px);
-  margin-top:clamp(16px, 2.4vw, 28px);
+  margin-top:clamp(13px, 1.9vw, 22px);
+  display:flex; justify-content:center;
 }
 .panel{
   position:relative;
+  width:clamp(222px, 34vw, 384px);
   background:var(--card);
-  border:2.2px solid var(--line);
+  border:2.6px solid var(--line);
   border-radius:var(--hand-radius);
-  padding:clamp(12px,1.8vw,22px) clamp(6px,1vw,14px) clamp(10px,1.4vw,18px);
-  display:flex; flex-direction:column; align-items:center; gap:clamp(6px,.9vw,12px);
-  box-shadow:0 10px 24px rgba(99,74,56,.10);
+  padding:clamp(13px,1.6vw,20px) clamp(10px,1.4vw,18px) clamp(12px,1.5vw,18px);
+  box-shadow:0 12px 28px rgba(99,74,56,.11);
   /* 대기 상태: 채도를 내려 가라앉혀 둔다 */
-  filter:saturate(.70);
-  opacity:.80;
+  filter:saturate(.72);
+  opacity:.86;
   transition:opacity .16s ease, filter .16s ease, transform .16s ease, border-color .16s ease;
   will-change:transform, opacity, filter;
 }
@@ -145,54 +148,74 @@ h1{
   content:""; position:absolute; inset:0; border-radius:inherit;
   background:radial-gradient(130% 100% at 50% 16%, rgba(246,196,210,.88), rgba(250,236,214,.50) 54%, rgba(255,253,247,0) 82%);
   opacity:0; transform:scale(.82);
-  transition:opacity .09s ease, transform .18s ease;
+  transition:opacity .12s ease, transform .2s ease;
   pointer-events:none;
 }
 /* 2겹 — 카드 꼭지의 작은 꽃잎 네 장이 켜진다 */
 .lamps{
-  position:absolute; top:-9px; left:50%; transform:translateX(-50%);
-  display:flex; gap:7px; pointer-events:none;
+  position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+  display:flex; gap:8px; pointer-events:none; z-index:2;
 }
 .lamps i{
-  width:9px; height:12px; border-radius:60% 60% 50% 50%;
-  background:var(--line-soft); border:1.3px solid #CBB796;
+  width:10px; height:13px; border-radius:60% 60% 50% 50%;
+  background:var(--line-soft); border:1.4px solid #CBB796;
   opacity:.75; transition:opacity .1s ease, background-color .1s ease, border-color .1s ease;
 }
-.panel .ico{ width:clamp(62px, 9.4vw, 148px); height:auto; display:block; position:relative; z-index:1 }
-.panel .nm{
+/* 슬롯 창 — 한 칸만 보이고 나머지는 잘린다 */
+.reel-window{
   position:relative; z-index:1;
-  font-family:var(--font-disp); font-weight:700;
-  font-size:clamp(1.15rem, 2.5vw, 2.1rem);
-  letter-spacing:.04em; color:var(--ink);
+  overflow:hidden;
+  height:var(--slot);
+  border-radius:18px;
 }
-/* 점등 상태 — 3겹: 종이가 들리고 채도가 깨어난다 */
+.reel{
+  display:flex; flex-direction:column;
+  height:400%;                     /* 슬롯 네 장 */
+  transform:translateY(0);
+  will-change:transform;
+}
+.slot{
+  flex:none; height:var(--slot);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:clamp(6px,.9vw,12px);
+  padding:clamp(6px,1vw,12px) 0;
+}
+.slot .ico{ width:clamp(84px, 12.6vw, 150px); height:auto; display:block }
+.slot .nm{
+  font-family:var(--font-disp); font-weight:700;
+  font-size:clamp(1.35rem, 2.8vw, 2.2rem);
+  letter-spacing:.05em; color:var(--ink);
+}
+/* 슬롯 창 위아래에 옅은 그늘을 줘 '통 안에서 돈다' 느낌을 만든다 */
+.reel-window::after{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  background:linear-gradient(rgba(118,96,78,.10), rgba(118,96,78,0) 11%, rgba(118,96,78,0) 89%, rgba(118,96,78,.10));
+}
+/* 점등 상태 — 종이가 들리고 채도가 깨어난다 */
 .panel.lit{
   opacity:1; filter:saturate(1.25);
   transform:translateY(-5px);
   border-color:var(--rose-line);
-  box-shadow:0 16px 30px rgba(184,76,103,.20);
+  box-shadow:0 18px 34px rgba(184,76,103,.20);
 }
 .panel.lit::before{ opacity:1; transform:scale(1) }
 .panel.lit .lamps i{ opacity:1; background:#F7C9D5; border-color:var(--rose-line) }
-/* 확정 — 조금 더 크게 안착, 나머지는 뒤로 물러난다 */
+/* 확정 — 조금 더 크게 안착 */
 .panel.won{
-  transform:translateY(-6px) scale(1.055);
+  transform:translateY(-6px) scale(1.05);
   transition:transform .42s cubic-bezier(.2,1.6,.4,1), opacity .3s ease, filter .3s ease;
 }
-.panel.dim{ opacity:.34; filter:saturate(.35) }
 /* 대기 중 숨쉬기 — 돌릴 준비가 됐다는 신호 */
-@keyframes breathe{ 0%,100%{opacity:.78} 50%{opacity:.92} }
+@keyframes breathe{ 0%,100%{opacity:.84} 50%{opacity:.97} }
 .board.idle .panel{ animation:breathe 2.4s ease-in-out infinite }
-.board.idle .panel:nth-child(2){ animation-delay:-.8s }
-.board.idle .panel:nth-child(3){ animation-delay:-1.6s }
 
 /* ==========================================================================
    5. 시작 버튼 + 길이 선택
    ========================================================================== */
-.controls{ margin-top:clamp(18px,2.6vw,30px); display:flex; flex-direction:column; align-items:center; gap:14px }
+.controls{ margin-top:clamp(14px,2vw,22px); display:flex; flex-direction:column; align-items:center; gap:14px }
 .btn-start{
   width:min(420px, 92%);
-  padding:clamp(15px,1.7vw,22px) 28px;
+  padding:clamp(13px,1.5vw,19px) 28px;
   border:none; border-radius:999px;
   background:linear-gradient(180deg, var(--rose) 0%, var(--rose-deep) 100%);
   color:#fff; font-family:var(--font-disp); font-weight:700;
@@ -221,8 +244,8 @@ h1{
    6. 결과 — 종이 띠 (방송 자막이 아니라 종이 칼럼 안의 결과 띠)
    ========================================================================== */
 .result{
-  margin-top:clamp(16px,2.2vw,26px);
-  min-height:clamp(104px,10vw,150px);
+  margin-top:clamp(12px,1.6vw,18px);
+  min-height:clamp(70px,7.4vh,104px);
   display:grid; place-items:center;
   background:var(--card);
   border:2.2px solid var(--line);
@@ -235,11 +258,12 @@ h1{
 .result .wait{ color:var(--ink-soft); font-size:clamp(.95rem,1.5vw,1.15rem) }
 .result .shout{
   font-family:var(--font-disp); font-weight:700; color:var(--ink);
-  font-size:clamp(2rem, 5.2vw, 4rem); line-height:1.1; letter-spacing:.02em;
+  font-size:clamp(1.55rem, min(3.4vw, 4.6vh), 2.6rem); line-height:1.12; letter-spacing:.02em;
   background:linear-gradient(transparent 64%, rgba(244,175,193,.9) 64% 92%, transparent 92%);
   padding:0 .16em;
 }
-.result .hint{ margin-top:12px; font-size:clamp(.86rem,1.3vw,1.02rem); color:var(--ink-soft) }
+.result .show{ display:flex; align-items:baseline; justify-content:center; gap:4px 16px; flex-wrap:wrap }
+.result .hint{ font-size:clamp(.88rem,1.35vw,1.06rem); color:var(--ink-soft) }
 .result .hint b{ color:var(--rose-deep); font-weight:700 }
 .result .spinning{ font-family:var(--font-disp); font-size:clamp(1.3rem,2.6vw,2rem); color:var(--ink-soft); letter-spacing:.14em }
 @keyframes riseIn{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
@@ -249,7 +273,7 @@ h1{
    7. 지난 판 기록 칩
    ========================================================================== */
 .history{
-  margin-top:16px; display:flex; flex-wrap:wrap; gap:8px;
+  margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;
   align-items:center; justify-content:center;
   min-height:38px;
 }
@@ -275,11 +299,29 @@ h1{
 }
 
 /* 도움말 */
-.foot{ margin-top:22px; text-align:center; font-size:.84rem; color:var(--ink-soft); line-height:1.8 }
+.foot{ margin-top:14px; text-align:center; font-size:.84rem; color:var(--ink-soft); line-height:1.8 }
 .foot kbd{
   font-family:var(--font-body); font-size:.8rem;
   background:var(--card); border:1.3px solid var(--line); border-bottom-width:2.4px;
   border-radius:7px; padding:2px 7px; color:var(--ink);
+}
+
+/* 세로가 짧은 화면(노트북 720~768p)에서도 결과와 기록까지 한 화면에 들어오게 압축한다 */
+@media (max-height: 840px){
+  .site-head{ padding:4px 0 0 }
+  .bi{ margin-bottom:6px }
+  .tagline{ margin-top:5px; font-size:.84rem }
+  .foot{ display:none }
+  .controls{ margin-top:10px; gap:9px }
+  .btn-start{ padding:11px 24px }
+  .seg button{ padding:6px 14px }
+  .seg .lbl{ padding:0 6px 0 8px }
+  .result{ margin-top:10px }
+  .history{ margin-top:8px; min-height:32px }
+}
+@media (max-height: 680px){
+  .tagline{ display:none }
+  .board{ margin-top:8px }
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -398,29 +440,38 @@ h1{
       <h1>오늘의 꽃 가위바위보</h1>
       <svg class="sprig sprig-r" viewBox="0 0 70 90" aria-hidden="true"><use href="#sprigLavender"/></svg>
     </div>
-    <p class="tagline">시작을 누르면 세 칸에 불이 돌아가다 멈춥니다. 멈춘 칸이 MC가 낸 패입니다.</p>
+    <p class="tagline">시작을 누르면 칸 안에서 가위·바위·보가 빠르게 돌아가다 멈춥니다. 멈춘 것이 MC가 낸 패입니다.</p>
     <div class="tools">
       <button class="icon-btn" id="muteBtn" type="button" aria-pressed="false" aria-label="소리 끄기">🔊</button>
       <button class="icon-btn" id="fullBtn" type="button" aria-label="전체화면">⛶</button>
     </div>
   </header>
 
-  <!-- ── 가위 / 바위 / 보 세 칸 ─────────────────────────────────────────── -->
-  <section class="board idle" id="board" aria-label="가위 바위 보 세 칸">
-    <div class="panel" id="p0" data-i="0" role="img" aria-label="가위">
+  <!-- ── 칸 하나 안에서 가위·바위·보가 돈다 ─────────────────────────────── -->
+  <section class="board idle" id="board">
+    <div class="panel" id="panel" data-i="0" role="img" aria-label="가위">
       <span class="lamps" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><use href="#icoScissors"/></svg>
-      <span class="nm">가위</span>
-    </div>
-    <div class="panel" id="p1" data-i="1" role="img" aria-label="바위">
-      <span class="lamps" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><use href="#icoRock"/></svg>
-      <span class="nm">바위</span>
-    </div>
-    <div class="panel" id="p2" data-i="2" role="img" aria-label="보">
-      <span class="lamps" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <svg class="ico" viewBox="0 0 100 100" aria-hidden="true"><use href="#icoPaper"/></svg>
-      <span class="nm">보</span>
+      <div class="reel-window">
+        <!-- 슬롯 네 장: 가위·바위·보 + 가위(복제). 복제 칸에서 티 안 나게 처음으로 되돌린다 -->
+        <div class="reel" id="reel" aria-hidden="true">
+          <div class="slot">
+            <svg class="ico" viewBox="0 0 100 100"><use href="#icoScissors"/></svg>
+            <span class="nm">가위</span>
+          </div>
+          <div class="slot">
+            <svg class="ico" viewBox="0 0 100 100"><use href="#icoRock"/></svg>
+            <span class="nm">바위</span>
+          </div>
+          <div class="slot">
+            <svg class="ico" viewBox="0 0 100 100"><use href="#icoPaper"/></svg>
+            <span class="nm">보</span>
+          </div>
+          <div class="slot">
+            <svg class="ico" viewBox="0 0 100 100"><use href="#icoScissors"/></svg>
+            <span class="nm">가위</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -482,7 +533,8 @@ var STRONG_TICK_AT = 200;                              /* 이 간격부터 묵�
 var RESTART_LOCK = 400;                                /* 결과 뒤 재시작 잠금 */
 
 /* ---------- 1. DOM ---------- */
-var panels   = [document.getElementById('p0'), document.getElementById('p1'), document.getElementById('p2')];
+var panelEl  = document.getElementById('panel');
+var reelEl   = document.getElementById('reel');
 var boardEl  = document.getElementById('board');
 var startBtn = document.getElementById('startBtn');
 var resultEl = document.getElementById('result');
@@ -651,16 +703,49 @@ function buildSchedule(startIdx, winner, mode){
 }
 
 /* ==========================================================================
-   7. 점등 렌더 — 클래스만 토글한다 (box-shadow 트랜지션 없음)
+   7. 슬롯 렌더
+      슬롯은 네 장(가위·바위·보·가위 복제)이고 창 높이는 한 칸이다.
+      translateY(-25%) 가 정확히 한 칸 — 퍼센트는 요소 자신의 높이 기준이라
+      창 크기가 바뀌어도 어긋나지 않는다. 측정도, resize 처리도 필요 없다.
+      reelPos 0,1,2,3 중 3 은 0 과 같은 그림이므로, 3 에서 다음 칸으로 갈 때
+      트랜지션을 끄고 0 으로 되돌린 뒤 1 로 미끄러뜨린다 — 눈에는 계속 도는 걸로 보인다.
    ========================================================================== */
-function lightOnly(idx){
-  for (var i = 0; i < 3; i++){
-    panels[i].classList.toggle('lit', i === idx);
-    panels[i].classList.remove('won', 'dim');
+var reelPos = 0;                 /* 0..3 */
+
+function setReel(pos, ms){
+  reelEl.style.transition = ms > 0 ? ('transform ' + ms + 'ms cubic-bezier(.25,.86,.3,1)') : 'none';
+  reelEl.style.transform  = 'translateY(' + (-25 * pos) + '%)';
+}
+/* 한 칸 올린다. ms 는 이번 칸에 쓸 미끄러짐 시간(0 이면 즉시) */
+function stepReel(ms){
+  if (reelPos >= 3){
+    /* 복제 칸에 와 있다 — 같은 그림인 0 번으로 소리 없이 되돌리고 거기서 1 로 간다 */
+    setReel(0, 0);
+    void reelEl.offsetHeight;           /* 되돌림을 확정시킨다(리플로우) */
+    reelPos = 1;
+  } else {
+    reelPos++;
   }
+  setReel(reelPos, ms);
+}
+/* 특정 패를 트랜지션 없이 바로 보여 준다 */
+function showSymbol(idx){
+  reelPos = idx % 3;
+  setReel(reelPos, 0);
+  syncPanelLabel(reelPos);
+}
+function syncPanelLabel(idx){
+  panelEl.setAttribute('data-i', idx);
+  panelEl.setAttribute('aria-label', NAMES[idx]);
+}
+/* 간격이 짧을수록 미끄러짐도 짧게 — 빠를 때는 거의 즉시, 느릴 때는 또렷하게 */
+function slideMs(interval){
+  var m = interval * 0.6;
+  if (m < 26) return 0;
+  return m > 170 ? 170 : m;
 }
 function clearLights(){
-  for (var i = 0; i < 3; i++) panels[i].classList.remove('lit', 'won', 'dim');
+  panelEl.classList.remove('lit', 'won');
 }
 
 /* ==========================================================================
@@ -690,7 +775,9 @@ function startSpin(){
   startBtn.disabled = true;
   startBtn.textContent = '돌고 있어요…';
   resultEl.innerHTML = '<p class="spinning">돌리는 중…</p>';
-  lightOnly(startIdx);
+  showSymbol(startIdx);                 /* 슬롯을 시작 패에 맞춰 둔다 */
+  panelEl.classList.remove('won');
+  panelEl.classList.add('lit');         /* 도는 동안 칸에 불이 들어와 있다 */
 
   rafId = requestAnimationFrame(frame);
 }
@@ -709,7 +796,12 @@ function frame(now){
   }
 
   if (moved){
-    lightOnly(spin.cur);
+    /* 한 칸만 올랐으면 미끄러뜨리고, 프레임이 밀려 여러 칸이면 한 번에 건너뛴다 */
+    if (moved === 1) stepReel(slideMs(lastIv));
+    else showSymbol(spin.cur);
+    /* 어떤 이유로든 어긋나면 바로 맞춘다 — 보이는 그림이 결과와 달라서는 안 된다 */
+    if (reelPos % 3 !== spin.cur) showSymbol(spin.cur);
+    syncPanelLabel(spin.cur);
     playTick(spin.cur, lastIv >= STRONG_TICK_AT);
   }
 
@@ -726,12 +818,9 @@ function lockIn(){
   lastEndAt = performance.now();
   rafId = null;
 
-  for (var i = 0; i < 3; i++){
-    panels[i].classList.remove('lit');
-    panels[i].classList.toggle('won', i === w);
-    panels[i].classList.toggle('dim', i !== w);
-  }
-  panels[w].classList.add('lit');
+  if (reelPos % 3 !== w) showSymbol(w);
+  syncPanelLabel(w);
+  panelEl.classList.add('lit', 'won');
 
   resultEl.innerHTML =
     '<div class="show">' +
@@ -744,7 +833,7 @@ function lockIn(){
   saveHistory();
   renderHistory(true);
 
-  burstPetals(w);
+  burstPetals();
   playFanfare();
 
   startBtn.disabled = false;
@@ -763,9 +852,9 @@ document.addEventListener('visibilitychange', function(){
    9. 꽃잎 흩날림 — animationend 에서 반드시 제거한다
    ========================================================================== */
 var PETAL_COLORS = ['#F8D3DC', '#E3D9F0', '#DCE9D0', '#F6E7A9', '#F7C9D5'];
-function burstPetals(idx){
+function burstPetals(){
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  var box = panels[idx].getBoundingClientRect();
+  var box = panelEl.getBoundingClientRect();
   var cx = box.left + box.width / 2;
   var cy = box.top + box.height / 2;
   for (var i = 0; i < 9; i++){
@@ -929,6 +1018,7 @@ syncMuteBtn();
 syncLenBtns();
 renderHistory(false);
 clearLights();
+showSymbol(0);
 </script>
 </body>
 </html>
