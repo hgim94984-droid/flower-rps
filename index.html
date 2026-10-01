@@ -231,6 +231,28 @@ h1{
   content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
   background:linear-gradient(rgba(60,44,34,.14), rgba(60,44,34,0) 10%, rgba(60,44,34,0) 90%, rgba(60,44,34,.14));
 }
+/* 뽑힌 패 배지 — 결과가 확정되면 그림 왼쪽 아래에 크게 뜬다. 크기는 칸에 비례 */
+.pick{
+  position:absolute; left:4%; bottom:4%; z-index:3;
+  width:37%; aspect-ratio:1; border-radius:50%;
+  background:#FFFDF7;
+  border:calc(var(--slot) * .02) solid #1F9D8B;
+  box-shadow:0 calc(var(--slot) * .015) calc(var(--slot) * .05) rgba(40,30,25,.38);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:calc(var(--slot) * .006);
+  opacity:0; transform:scale(.35); transform-origin:22% 78%;
+  pointer-events:none;
+}
+.pick-ico{ font-size:calc(var(--slot) * .17); line-height:1.05 }
+.pick-nm{
+  font-family:var(--font-body); font-weight:700;
+  font-size:calc(var(--slot) * .085); line-height:1; letter-spacing:.04em;
+  color:#17806F;
+}
+.panel.won .pick{
+  opacity:1; transform:scale(1);
+  transition:transform .38s cubic-bezier(.2,1.7,.4,1), opacity .12s ease;
+}
 /* 점등 상태 — 종이가 들리고 채도가 깨어난다 */
 .panel.lit{
   opacity:1; filter:saturate(1.25);
@@ -456,6 +478,11 @@ h1{
             <img class="pic" src="char-gawi.jpg" width="900" height="900" alt="가위" decoding="sync">
           </div>
         </div>
+        <!-- 뽑힌 패 배지 — 화면을 작게 보는 사람도 무엇이 나왔는지 알 수 있게 -->
+        <div class="pick" id="pick" aria-hidden="true">
+          <span class="pick-ico" id="pickIco"></span>
+          <span class="pick-nm" id="pickNm"></span>
+        </div>
       </div>
     </div>
   </section>
@@ -499,6 +526,7 @@ h1{
 
 /* ---------- 0. 상수 ---------- */
 var NAMES  = ['가위', '바위', '보'];
+var HAND   = ['✌️', '✊', '✋'];   /* ✌ ✊ ✋ — 뽑힌 패 배지에 쓴다 */
 var BEATEN_BY = ['바위', '보', '가위'];        /* NAMES[i] 를 이기는 패 */
 var TICK_HZ   = [659.26, 523.25, 783.99];      /* 가위 E5 / 바위 C5 / 보 G5 */
 var LS_MUTE = 'todayFlowerRSP.muted.v1';
@@ -522,6 +550,8 @@ var RESTART_LOCK = 400;                                /* 결과 뒤 재시작 �
 /* ---------- 1. DOM ---------- */
 var panelEl  = document.getElementById('panel');
 var reelEl   = document.getElementById('reel');
+var pickIco  = document.getElementById('pickIco');
+var pickNm   = document.getElementById('pickNm');
 var boardEl  = document.getElementById('board');
 var startBtn = document.getElementById('startBtn');
 var resultEl = document.getElementById('result');
@@ -815,6 +845,8 @@ function lockIn(){
 
   if (reelPos % 3 !== w) showSymbol(w);
   syncPanelLabel(w);
+  pickIco.textContent = HAND[w];
+  pickNm.textContent  = NAMES[w];
   panelEl.classList.add('lit', 'won');
 
   resultEl.innerHTML =
